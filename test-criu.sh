@@ -26,8 +26,17 @@ sleep 1
 criu convert -D /root/images -v4 --dax-device /dev/dax0.0
 
 # resotre
-sleep 0.5
-mkdir -p /run/criu-restore
-criu restore -d -D /root/images/h-memory/ -W /run/criu-restore -v4 -o restore.log
+TIMES=3
+for((i=0;i<TIMES;i++)); do
+  sleep 0.5
+  mkdir -p /run/criu-restore/${i}
+  criu restore -d -D /root/images/h-memory -W /run/criu-restore/${i} -v4 -o restore.log
+  restored_pid=$!
+  echo "${i}: resotred pid $restored_pid"
 
-curl -X POST http://localhost:5000 -d '{"size": 512000}'
+  size=$((i * 512000))
+  
+  curl -X POST http://localhost:5000 -d '{"size": '$size'}'
+  pkill python
+done
+

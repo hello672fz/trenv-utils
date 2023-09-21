@@ -65,7 +65,7 @@ rootfs_file=$output_dir/rootfs
 docker_image=archlinux:latest
 mount_point=$work_dir/mnt
 install_packages=(vim man man-db man-pages python iproute2 net-tools libnet libnl libcap gdb)
-rootfs_size=2GiB
+rootfs_size=12GiB
 
 mkdir -p $mount_point
 mkdir -p $work_dir

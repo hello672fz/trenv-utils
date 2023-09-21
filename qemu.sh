@@ -9,6 +9,7 @@
 
 rm -f /root/multipass-shared/rootfs-work
 cp --reflink=auto /root/multipass-shared/rootfs /root/multipass-shared/rootfs-work
+# fallocate -l 15GiB /root/multipass-shared/rootfs-work
 
 qemu-system-x86_64 -kernel  ~/linux/arch/x86/boot/bzImage \
   -nographic \

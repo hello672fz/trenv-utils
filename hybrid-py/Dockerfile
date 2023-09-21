@@ -1,6 +1,5 @@
 FROM --platform=${TARGETPLATFORM:-linux/amd64} ghcr.io/openfaas/of-watchdog:0.9.10 as watchdog
-FROM jialianghuang/hybrid as package-base
-FROM --platform=${TARGETPLATFORM:-linux/amd64} nikolaik/python-nodejs:python3.11-nodejs18 as build
+FROM jialianghuang/hybrid as build
 
 COPY --from=watchdog /fwatchdog /usr/bin/fwatchdog
 RUN chmod +x /usr/bin/fwatchdog
@@ -19,10 +18,6 @@ USER app
 
 ENV PATH=$PATH:/home/app/.local/bin
 
-##############################################
-# Start build app directory
-##############################################
-FROM package-base as package-build
 SHELL ["/bin/bash", "-c"]
 WORKDIR /home/app/
 
@@ -36,18 +31,25 @@ COPY --chown=app:app function/requirements.txt	.
 RUN source /home/app/faas/bin/activate && pip install --no-cache-dir -r requirements.txt
 COPY --chown=app:app function/   .
 
+##############################################
+# Another step to copy the /home/app out
+
+# docker build --build-arg http_proxy=http://172.17.0.1:7890 \
+#   --build-arg https_proxy=http://172.17.0.1:7890 \
+#   --target=package --output type=local,dest=/some/path .
+##############################################
 FROM scratch as package
-COPY --from=package-build /home/app /
+COPY --from=build /home/app /
 
 ##############################################
-# docker build --target=package --output type=local,dest=$(pwd)/out/ .
-# Finish build app directory
 # Start test
 ##############################################
 
 FROM build as test
 
 ARG TEST_COMMAND=tox
+WORKDIR /home/app/function
+SHELL ["/bin/sh", "-c"]
 ARG TEST_ENABLED=true
 RUN [ "$TEST_ENABLED" = "false" ] && echo "skipping tests" || (source faas/bin/activate && eval "$TEST_COMMAND")
 
