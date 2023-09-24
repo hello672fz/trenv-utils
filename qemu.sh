@@ -7,15 +7,15 @@
 # mkinitramfs -o ~/initramfs-6.1.0 6.1.0-rc8+
 #
 
-rm -f /root/multipass-shared/rootfs-work
-cp --reflink=auto /root/multipass-shared/rootfs /root/multipass-shared/rootfs-work
+# rm -f /root/multipass-shared/rootfs-work
+# cp --reflink=auto /root/multipass-shared/rootfs /root/multipass-shared/rootfs-work
 # fallocate -l 15GiB /root/multipass-shared/rootfs-work
 
 qemu-system-x86_64 -kernel  ~/linux/arch/x86/boot/bzImage \
   -nographic \
   -netdev user,id=n1 \
   -device e1000,netdev=n1 \
-  -m 16G,slots=10,maxmem=64G \
+  -m 32G,slots=10,maxmem=64G \
   -machine pc,nvdimm=on \
   -cpu host \
   --enable-kvm \

@@ -2,8 +2,9 @@
 
 set -e
 
-rootfs_file=/root/multipass-shared/rootfs
+rootfs_file=/root/multipass-shared/rootfs-work
 mount_point=/root/qemu_linux/mnt
+pkgs_path=/root/multipass-shared/pkgs
 
 function faasd_prepare() {
   echo "prepare faasd..."
@@ -18,7 +19,7 @@ function faasd_prepare() {
   cp -r /root/qemu_linux/hybrid-py $mount_point/root/template
 
   mkdir -p $mount_point/var/lib/faasd/
-  cp -r /var/lib/faasd/pkgs $mount_point/var/lib/faasd/
+  cp -r $pkgs_path $mount_point/var/lib/faasd/
 
   cp /root/qemu_linux/test-faasd.sh $mount_point/root
 }
@@ -41,7 +42,7 @@ function container_runtime_prepare() {
 
 function criu_prepare() {
   echo "prepare criu..."
-  cp /root/criu/criu/criu $mount_point/usr/bin
+  cp /root/criu/criu/criu $mount_point/root
   cp /lib/x86_64-linux-gnu/libprotobuf-c.so.1 $mount_point/usr/lib
 }
 
