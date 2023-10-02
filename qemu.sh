@@ -22,6 +22,6 @@ qemu-system-x86_64 -kernel  ~/linux/arch/x86/boot/bzImage \
   -initrd /root/initramfs-6.1.0 \
   -object memory-backend-file,id=mem1,share=on,mem-path=/dev/dax0.0,size=4G,align=2M,readonly=off \
   -device nvdimm,id=nvdimm1,memdev=mem1,unarmed=off \
-  -hda /root/multipass-shared/rootfs-work \
+  -hda /root/multipass-shared/rootfs \
   -append 'console=ttyS0 root=/dev/sda rw'
   # -append 'console=ttyS0' \

@@ -2,7 +2,7 @@
 
 set -e
 
-rootfs_file=/root/multipass-shared/rootfs-work
+rootfs_file=/root/multipass-shared/rootfs
 mount_point=/root/qemu_linux/mnt
 pkgs_path=/root/multipass-shared/pkgs
 
@@ -16,7 +16,7 @@ function faasd_prepare() {
   
   cp /root/multipass-shared/stack.yml "$mount_point/root"
   mkdir -p "$mount_point/root/template"
-  cp -r /root/qemu_linux/hybrid-py $mount_point/root/template
+  cp -r /root/multipass-shared/faasd-testdriver/functions/template/hybrid-py $mount_point/root/template
 
   mkdir -p $mount_point/var/lib/faasd/
   cp -r $pkgs_path $mount_point/var/lib/faasd/
@@ -68,5 +68,7 @@ container_runtime_prepare
 faasd_prepare
 
 cp /root/qemu_linux/insmod.sh $mount_point/root
+cp /root/micro_bench/bin/cgo_mount $mount_point/root
+cp /root/micro_bench/bin/no_cgo_mount $mount_point/root
 
 umount $mount_point
