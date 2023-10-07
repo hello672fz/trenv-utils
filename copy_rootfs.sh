@@ -57,15 +57,26 @@ function simple_test_prepare() {
   cp /root/qemu_linux/test-criu.sh $mount_point/root
 }
 
+function test_driver_prepare() {
+  mkdir -p $mount_point/root/faasd-testdriver
+  cp /root/multipass-shared/faasd-testdriver/main.py $mount_point/root/faasd-testdriver
+  cp /root/multipass-shared/faasd-testdriver/test_driver.py $mount_point/root/faasd-testdriver
+  cp /root/multipass-shared/faasd-testdriver/config.yml $mount_point/root/faasd-testdriver
+  cp /root/multipass-shared/faasd-testdriver/workload_1.json $mount_point/root/faasd-testdriver
+  cp /root/multipass-shared/faasd-testdriver/requirements.txt $mount_point/root/faasd-testdriver
+}
+
 # main start:
 
 umount $mount_point || true
+mkdir -p $mount_point
 mount -o loop $rootfs_file $mount_point
 
 criu_prepare
 # simple_test_prepare
 container_runtime_prepare
 faasd_prepare
+test_driver_prepare
 
 cp /root/qemu_linux/insmod.sh $mount_point/root
 cp /root/micro_bench/bin/cgo_mount $mount_point/root

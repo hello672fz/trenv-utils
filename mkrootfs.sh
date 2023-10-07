@@ -1,4 +1,5 @@
 #!/bin/bash
+# run inside multipass vm
 
 set -exuo pipefail
 
@@ -27,9 +28,9 @@ mkdir -p /root/var/lib/pacman
 
 chroot /root bash
 mkdir -p /root/app
-python -m venv /root/app/faas
-source /root/app/faas/bin/activate
-pip install flask waitress
+python -m venv /root/app/test
+source /root/app/test/bin/activate
+pip install requests urllib3 matplotlib pyyaml gevent
 FOE
 }
 function remote_root_password_in_rootfs {

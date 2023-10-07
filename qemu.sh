@@ -11,13 +11,14 @@
 # cp --reflink=auto /root/multipass-shared/rootfs /root/multipass-shared/rootfs-work
 # fallocate -l 15GiB /root/multipass-shared/rootfs-work
 
-qemu-system-x86_64 -kernel  ~/linux/arch/x86/boot/bzImage \
+taskset -c 0-25,52-77 qemu-system-x86_64 -kernel  ~/linux/arch/x86/boot/bzImage \
   -nographic \
   -netdev user,id=n1 \
   -device e1000,netdev=n1 \
-  -m 32G,slots=10,maxmem=64G \
+  -m 64G,slots=10,maxmem=128G \
   -machine pc,nvdimm=on \
   -cpu host \
+  -smp cores=26,threads=2 \
   --enable-kvm \
   -initrd /root/initramfs-6.1.0 \
   -object memory-backend-file,id=mem1,share=on,mem-path=/dev/dax0.0,size=4G,align=2M,readonly=off \

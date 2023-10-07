@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# setup open file descriptor limit
+ulimit -n 102400
+
 if [ -f /root/criu.kdat ]; then
   echo "copying criu.kdat..."
   cp /root/criu.kdat /run
@@ -20,9 +23,9 @@ apps=(h-hello-world h-memory pyaes image-processing video-processing \
 for app in ${apps[@]}; do
   echo "start download $app ..."
   ctr image pull docker.io/jialianghuang/${app}:latest
-  ctr -n openfaas-fn c rm ${app}-1 || true
-  ctr -n openfaas-fn c rm ${app} || true
 done
+
+ctr -n openfaas-fn c rm $(ctr -n openfaas-fn c ls -q) || true
 
 rm -rf /var/lib/faasd/checkpoints
 mkdir -p /var/lib/faasd/checkpoints
@@ -95,24 +98,28 @@ sleep 2
 # register new container
 faas-cli register -f /root/stack.yml -g http://127.0.0.1:8081
 sleep 2
+# 
+# curl http://127.0.0.1:8081/invoke/h-hello-world
+# # belows are all switch by default
+# for ((i = 1; i <= 3; i++)); do
+#   curl -X POST http://127.0.0.1:8081/invoke/h-memory -d '{"size": 12345678}'
+#   
+#   curl -X POST http://127.0.0.1:8081/invoke/pyaes -d '{"length_of_message": 4000, "num_of_iterations": 120}'
+#   
+#   curl http://127.0.0.1:8081/invoke/image-processing
+#   
+#   curl http://127.0.0.1:8081/invoke/image-recognition
+#   
+#   curl http://127.0.0.1:8081/invoke/video-processing
+#   
+#   curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 1500}' http://127.0.0.1:8081/invoke/chameleon &> chameleon-${i}-cr.log
+#   
+#   curl -X POST -d '{"username": "Peking", "random_len": 1554}' http://127.0.0.1:8081/invoke/dynamic-html &> dynamic-html-${i}-cr.log
+# done
 
-curl http://127.0.0.1:8081/invoke/h-hello-world
-# belows are all switch by default
-for ((i = 1; i <= 3; i++)); do
-  curl -X POST http://127.0.0.1:8081/invoke/h-memory -d '{"size": 12345678}'
-  
-  curl -X POST http://127.0.0.1:8081/invoke/pyaes -d '{"length_of_message": 4000, "num_of_iterations": 120}'
-  
-  curl http://127.0.0.1:8081/invoke/image-processing
-  
-  curl http://127.0.0.1:8081/invoke/image-recognition
-  
-  curl http://127.0.0.1:8081/invoke/video-processing
-  
-  curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 1500}' http://127.0.0.1:8081/invoke/chameleon &> chameleon-${i}-cr.log
-  
-  curl -X POST -d '{"username": "Peking", "random_len": 1554}' http://127.0.0.1:8081/invoke/dynamic-html &> dynamic-html-${i}-cr.log
-done
-
-curl http://127.0.0.1:8081/system/metrics &> metrics.output
+source /root/app/test/bin/activate
+cd /root/faasd-testdriver
+python main.py 2>&1 | tee /tmp/test.log
+ 
+curl http://127.0.0.1:8081/system/metrics &> /tmp/metrics.output
 

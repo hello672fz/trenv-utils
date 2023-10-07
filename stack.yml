@@ -1,0 +1,52 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://10.230.166.1:8080
+functions:
+  h-memory:
+    lang: hybrid-py
+    handler: ./h-memory
+    image: jialianghuang/h-memory:latest
+    port: 5000
+
+  h-hello-world:
+    lang: hybrid-py
+    handler: ./h-hello-world
+    image: jialianghuang/h-hello-world:latest
+    port: 5001
+
+  chameleon:
+    lang: hybrid-py
+    handler: ./chameleon
+    image: jialianghuang/chameleon:latest
+    port: 5002
+
+  dynamic-html:
+    lang: hybrid-py
+    handler: ./dynamic-html
+    image: jialianghuang/dynamic-html:latest
+    port: 5003
+
+  image-processing:
+    lang: hybrid-py
+    handler: ./image-processing
+    image: jialianghuang/image-processing:latest
+    port: 5004
+
+  pyaes:
+    lang: hybrid-py
+    handler: ./pyaes
+    image: jialianghuang/pyaes:latest
+    port: 5005
+
+  image-recognition:
+    lang: hybrid-py
+    handler: ./image-recognition
+    image: jialianghuang/image-recognition:latest
+    port: 5006
+
+  video-processing:
+    lang: hybrid-py
+    handler: ./video-processing
+    image: jialianghuang/video-processing:latest
+    port: 5007
