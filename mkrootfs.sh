@@ -3,7 +3,8 @@
 
 set -exuo pipefail
 
-my_dir="$(cd $(dirname $0) && pwd)"
+#my_dir="$(cd $(dirname $0) && pwd)"
+my_dir=/home/ubuntu/qemu_linux/tmp
 
 function make_rootfs_file {
     fallocate -l $rootfs_size $rootfs_file
@@ -65,7 +66,7 @@ output_dir=$my_dir/output
 rootfs_file=$output_dir/rootfs
 docker_image=archlinux:latest
 mount_point=$work_dir/mnt
-install_packages=(vim man man-db man-pages python iproute2 net-tools libnet libnl libcap gdb perf)
+install_packages=(vim man man-db man-pages python iproute2 net-tools libnet libnl libcap gdb perf sysstat)
 rootfs_size=12GiB
 
 mkdir -p $mount_point

@@ -17,11 +17,15 @@ function faasd_prepare() {
   cp /root/multipass-shared/stack.yml "$mount_point/root"
   mkdir -p "$mount_point/root/template"
   cp -r /root/multipass-shared/faasd-testdriver/functions/template/hybrid-py $mount_point/root/template
+  cp -r /root/multipass-shared/faasd-testdriver/functions/template/hybrid-node18 $mount_point/root/template
 
   mkdir -p $mount_point/var/lib/faasd/
   cp -r $pkgs_path $mount_point/var/lib/faasd/
 
   cp /root/qemu_linux/test-faasd.sh $mount_point/root
+
+  # coping golang dlv for debugging
+  cp /root/go/bin/dlv $mount_point/usr/local/bin
 }
 
 function container_runtime_prepare() {

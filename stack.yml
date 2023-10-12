@@ -7,46 +7,109 @@ functions:
     lang: hybrid-py
     handler: ./h-memory
     image: jialianghuang/h-memory:latest
+    limits:
+      cpu: 1
     port: 5000
+    environment:
+      port: 9000
 
   h-hello-world:
     lang: hybrid-py
     handler: ./h-hello-world
     image: jialianghuang/h-hello-world:latest
+    limits:
+      memory: 1G
+      cpu: 1
     port: 5001
+    environment:
+      port: 9001
 
   chameleon:
     lang: hybrid-py
     handler: ./chameleon
     image: jialianghuang/chameleon:latest
+    limits:
+      memory: 1G
+      cpu: 1
     port: 5002
+    environment:
+      port: 9002
 
   dynamic-html:
     lang: hybrid-py
     handler: ./dynamic-html
     image: jialianghuang/dynamic-html:latest
+    limits:
+      memory: 1G
+      cpu: 1
     port: 5003
+    environment:
+      port: 9003
 
   image-processing:
     lang: hybrid-py
     handler: ./image-processing
     image: jialianghuang/image-processing:latest
+    limits:
+      memory: 1G
+      cpu: 1
     port: 5004
+    environment:
+      port: 9004
 
   pyaes:
     lang: hybrid-py
     handler: ./pyaes
     image: jialianghuang/pyaes:latest
+    limits:
+      memory: 1G
+      cpu: 1
     port: 5005
+    environment:
+      port: 9005
 
   image-recognition:
     lang: hybrid-py
     handler: ./image-recognition
     image: jialianghuang/image-recognition:latest
+    limits:
+      memory: 1G
+      cpu: 2
     port: 5006
+    environment:
+      port: 9006
+      exec_timeout: 50
+      write_timeout: 55
 
   video-processing:
     lang: hybrid-py
     handler: ./video-processing
     image: jialianghuang/video-processing:latest
+    limits:
+      memory: 1G
+      cpu: 1
     port: 5007
+    environment:
+      port: 9007
+
+  crypto:
+    lang: hybrid-node18
+    handler: ./crypto
+    image: jialianghuang/crypto:latest
+    limits:
+      memory: 1G
+      cpu: 1
+    port: 5008
+    environment:
+      port: 9008
+
+  image-flip-rotate:
+    lang: hybrid-node18
+    handler: ./image-flip-rotate
+    image: jialianghuang/image-flip-rotate:latest
+    limits:
+      memory: 1G
+      cpu: 1
+    port: 5009
+    environment:
+      port: 9009
