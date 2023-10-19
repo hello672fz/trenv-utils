@@ -22,5 +22,6 @@ for p in ${faasd_build_path}/* ;do
   cd $faasd_build_path/$lambda
   docker build --build-arg http_proxy=http://172.17.0.1:7890 \
     --build-arg https_proxy=http://172.17.0.1:7890 \
+    --build-arg ADDITIONAL_PACKAGE="iproute2" \
     --target=package --output type=local,dest=${output_dir}/$lambda .
 done

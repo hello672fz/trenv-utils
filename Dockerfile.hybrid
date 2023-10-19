@@ -1,0 +1,8 @@
+FROM --platform=${TARGETPLATFORM:-linux/amd64} nikolaik/python-nodejs:python3.11-nodejs18 as build
+
+USER root
+RUN addgroup --system app && adduser app --system --ingroup app
+USER app
+WORKDIR /home/app
+RUN pip install --no-cache-dir virtualenv && virtualenv faas
+USER root

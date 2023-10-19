@@ -2,7 +2,7 @@
 set -e
 
 MOUNT_POINT=/root/qemu_linux/mnt
-OUTPUT_DIR=/root/result/switch-2
+OUTPUT_DIR=/root/result/baseline-2
 
 if [ -d $OUTPUT_DIR ]; then
   echo "there is already a dir at $OUTPUT_DIR, please remove it first"
