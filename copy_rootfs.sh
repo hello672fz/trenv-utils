@@ -14,7 +14,7 @@ function faasd_prepare() {
   cp /root/go/src/github.com/openfaas/faasd/resolv.conf $mount_point/root
   cp /root/go/src/github.com/openfaas/faasd/resolv.conf $mount_point/etc/resolv.conf
   
-  cp /root/multipass-shared/stack.yml "$mount_point/root"
+  cp /root/qemu_linux/stack.yml "$mount_point/root"
   mkdir -p "$mount_point/root/template"
   cp -r /root/multipass-shared/faasd-testdriver/functions/template/hybrid-py $mount_point/root/template
   cp -r /root/multipass-shared/faasd-testdriver/functions/template/hybrid-node18 $mount_point/root/template
@@ -66,7 +66,7 @@ function test_driver_prepare() {
   cp /root/multipass-shared/faasd-testdriver/main.py $mount_point/root/faasd-testdriver
   cp /root/multipass-shared/faasd-testdriver/test_driver.py $mount_point/root/faasd-testdriver
   cp /root/multipass-shared/faasd-testdriver/config.yml $mount_point/root/faasd-testdriver
-  cp /root/multipass-shared/faasd-testdriver/workload_1.json $mount_point/root/faasd-testdriver
+  cp /root/multipass-shared/faasd-testdriver/workload.json $mount_point/root/faasd-testdriver
   cp /root/multipass-shared/faasd-testdriver/requirements.txt $mount_point/root/faasd-testdriver
 }
 

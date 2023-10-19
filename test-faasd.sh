@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+function show_memory_usage() {
+  while true; do
+    date
+    free -h
+    sleep 1
+  done
+}
+
+
 function clean_output() {
   echo "clean previous output..."
   rm -f /root/faasd.log
@@ -88,7 +97,7 @@ function generate_cp() {
   
   faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "cham*"
   sleep 1
-  curl -X POST -d '{"num_of_rows": 1000, "num_of_cols": 1000}' http://127.0.0.1:8081/function/chameleon &> chameleon.output
+  curl -X POST -d '{"num_of_rows": 700, "num_of_cols": 400}' http://127.0.0.1:8081/function/chameleon &> chameleon.output
   
   faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "dyn*"
   sleep 1
@@ -149,6 +158,8 @@ function baseline_test() {
   faas-cli register -f /root/stack.yml -g http://127.0.0.1:8081
   sleep 2
 
+  show_memory_usage &> /tmp/memory_stat.output &
+  local mem_stat_pid=$!
   mpstat 1 > /tmp/mpstat.output &
   local mpstat_pid=$!
   source /root/app/test/bin/activate
@@ -157,7 +168,8 @@ function baseline_test() {
    
   curl http://127.0.0.1:8081/system/metrics > /tmp/metrics.output
   kill $mpstat_pid
-  kill $faasd_pid
+  kill $mem_stat_pid
+  # kill $faasd_pid
 }
 
 function functional_test() {
@@ -183,7 +195,7 @@ function functional_test() {
     
     curl http://127.0.0.1:8081/invoke/video-processing
     
-    curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 1500}' http://127.0.0.1:8081/invoke/chameleon &> chameleon-${i}-cr.log
+    curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 500}' http://127.0.0.1:8081/invoke/chameleon &> chameleon-${i}-cr.log
     
     curl -X POST -d '{"username": "Peking", "random_len": 1554}' http://127.0.0.1:8081/invoke/dynamic-html &> dynamic-html-${i}-cr.log
   
@@ -191,9 +203,12 @@ function functional_test() {
   
     curl http://127.0.0.1:8081/invoke/image-flip-rotate
   done
+
+  curl http://127.0.0.1:8081/system/metrics > /tmp/metrics.output
 }
 
 
+dmesg -D
 clean_output
 prepare
 kill_ctrs
@@ -204,7 +219,6 @@ sleep 1
 #switch_test
 baseline_test
 #functional_test
-
 
 echo "Finish testing, copying logs..."
 cp /tmp/faasd.log /root

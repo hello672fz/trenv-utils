@@ -18,7 +18,7 @@ functions:
     handler: ./h-hello-world
     image: jialianghuang/h-hello-world:latest
     limits:
-      memory: 1G
+      memory: 128M
       cpu: 1
     port: 5001
     environment:
@@ -29,7 +29,7 @@ functions:
     handler: ./chameleon
     image: jialianghuang/chameleon:latest
     limits:
-      memory: 1G
+      memory: 300M
       cpu: 1
     port: 5002
     environment:
@@ -40,7 +40,7 @@ functions:
     handler: ./dynamic-html
     image: jialianghuang/dynamic-html:latest
     limits:
-      memory: 1G
+      memory: 64M
       cpu: 1
     port: 5003
     environment:
@@ -51,7 +51,7 @@ functions:
     handler: ./image-processing
     image: jialianghuang/image-processing:latest
     limits:
-      memory: 1G
+      memory: 224M
       cpu: 1
     port: 5004
     environment:
@@ -62,7 +62,7 @@ functions:
     handler: ./pyaes
     image: jialianghuang/pyaes:latest
     limits:
-      memory: 1G
+      memory: 64M
       cpu: 1
     port: 5005
     environment:
@@ -73,7 +73,7 @@ functions:
     handler: ./image-recognition
     image: jialianghuang/image-recognition:latest
     limits:
-      memory: 1G
+      memory: 768M
       cpu: 2
     port: 5006
     environment:
@@ -86,7 +86,7 @@ functions:
     handler: ./video-processing
     image: jialianghuang/video-processing:latest
     limits:
-      memory: 1G
+      memory: 224M
       cpu: 1
     port: 5007
     environment:
@@ -97,7 +97,7 @@ functions:
     handler: ./crypto
     image: jialianghuang/crypto:latest
     limits:
-      memory: 1G
+      memory: 84M
       cpu: 1
     port: 5008
     environment:
@@ -108,7 +108,7 @@ functions:
     handler: ./image-flip-rotate
     image: jialianghuang/image-flip-rotate:latest
     limits:
-      memory: 1G
+      memory: 560M
       cpu: 1
     port: 5009
     environment:
