@@ -66,6 +66,7 @@ function test_driver_prepare() {
   cp /root/multipass-shared/faasd-testdriver/main.py $mount_point/root/faasd-testdriver
   cp /root/multipass-shared/faasd-testdriver/test_driver.py $mount_point/root/faasd-testdriver
   cp /root/multipass-shared/faasd-testdriver/config.yml $mount_point/root/faasd-testdriver
+  cp /root/multipass-shared/faasd-testdriver/warmup.json $mount_point/root/faasd-testdriver
   cp /root/multipass-shared/faasd-testdriver/workload.json $mount_point/root/faasd-testdriver
   cp /root/multipass-shared/faasd-testdriver/requirements.txt $mount_point/root/faasd-testdriver
 }

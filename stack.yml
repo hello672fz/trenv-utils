@@ -113,3 +113,183 @@ functions:
     port: 5009
     environment:
       port: 9009
+
+  chameleon_1:
+    lang: hybrid-py
+    handler: ./chameleon
+    image: jialianghuang/chameleon:latest
+    limits:
+      memory: 300M
+      cpu: 1
+    port: 5010
+    environment:
+      port: 9010
+
+  dynamic-html_1:
+    lang: hybrid-py
+    handler: ./dynamic-html
+    image: jialianghuang/dynamic-html:latest
+    limits:
+      memory: 64M
+      cpu: 1
+    port: 5011
+    environment:
+      port: 9011
+
+  image-processing_1:
+    lang: hybrid-py
+    handler: ./image-processing
+    image: jialianghuang/image-processing:latest
+    limits:
+      memory: 224M
+      cpu: 1
+    port: 5012
+    environment:
+      port: 9012
+
+  pyaes_1:
+    lang: hybrid-py
+    handler: ./pyaes
+    image: jialianghuang/pyaes:latest
+    limits:
+      memory: 64M
+      cpu: 1
+    port: 5013
+    environment:
+      port: 9013
+
+  image-recognition_1:
+    lang: hybrid-py
+    handler: ./image-recognition
+    image: jialianghuang/image-recognition:latest
+    limits:
+      memory: 768M
+      cpu: 2
+    port: 5014
+    environment:
+      port: 9014
+      exec_timeout: 50
+      write_timeout: 55
+
+  video-processing_1:
+    lang: hybrid-py
+    handler: ./video-processing
+    image: jialianghuang/video-processing:latest
+    limits:
+      memory: 224M
+      cpu: 1
+    port: 5015
+    environment:
+      port: 9015
+
+  crypto_1:
+    lang: hybrid-node18
+    handler: ./crypto
+    image: jialianghuang/crypto:latest
+    limits:
+      memory: 84M
+      cpu: 1
+    port: 5016
+    environment:
+      port: 9016
+
+  image-flip-rotate_1:
+    lang: hybrid-node18
+    handler: ./image-flip-rotate
+    image: jialianghuang/image-flip-rotate:latest
+    limits:
+      memory: 560M
+      cpu: 1
+    port: 5017
+    environment:
+      port: 9017
+
+  chameleon_2:
+    lang: hybrid-py
+    handler: ./chameleon
+    image: jialianghuang/chameleon:latest
+    limits:
+      memory: 300M
+      cpu: 1
+    port: 5018
+    environment:
+      port: 9018
+
+  dynamic-html_2:
+    lang: hybrid-py
+    handler: ./dynamic-html
+    image: jialianghuang/dynamic-html:latest
+    limits:
+      memory: 64M
+      cpu: 1
+    port: 5019
+    environment:
+      port: 9019
+
+  image-processing_2:
+    lang: hybrid-py
+    handler: ./image-processing
+    image: jialianghuang/image-processing:latest
+    limits:
+      memory: 224M
+      cpu: 1
+    port: 5020
+    environment:
+      port: 9020
+
+  pyaes_2:
+    lang: hybrid-py
+    handler: ./pyaes
+    image: jialianghuang/pyaes:latest
+    limits:
+      memory: 64M
+      cpu: 1
+    port: 5021
+    environment:
+      port: 9021
+
+  image-recognition_2:
+    lang: hybrid-py
+    handler: ./image-recognition
+    image: jialianghuang/image-recognition:latest
+    limits:
+      memory: 768M
+      cpu: 2
+    port: 5022
+    environment:
+      port: 9022
+      exec_timeout: 50
+      write_timeout: 55
+
+  video-processing_2:
+    lang: hybrid-py
+    handler: ./video-processing
+    image: jialianghuang/video-processing:latest
+    limits:
+      memory: 224M
+      cpu: 1
+    port: 5023
+    environment:
+      port: 9023
+
+  crypto_2:
+    lang: hybrid-node18
+    handler: ./crypto
+    image: jialianghuang/crypto:latest
+    limits:
+      memory: 84M
+      cpu: 1
+    port: 5024
+    environment:
+      port: 9024
+
+  image-flip-rotate_2:
+    lang: hybrid-node18
+    handler: ./image-flip-rotate
+    image: jialianghuang/image-flip-rotate:latest
+    limits:
+      memory: 560M
+      cpu: 1
+    port: 5025
+    environment:
+      port: 9025

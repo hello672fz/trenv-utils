@@ -79,43 +79,49 @@ function generate_cp() {
   sleep 1
   curl -X POST http://127.0.0.1:8081/function/h-memory -d '{"size": 134217728}'
   
-  faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "pyaes"
-  sleep 1
-  curl -X POST http://127.0.0.1:8081/function/pyaes -d '{"length_of_message": 2000, "num_of_iterations": 200}'
-  
-  faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "image-pro*"
-  sleep 1
-  curl http://127.0.0.1:8081/function/image-processing
-  
-  faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "image-rec*"
-  sleep 3
-  curl http://127.0.0.1:8081/function/image-recognition
-  
-  faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "video*"
-  sleep 1
-  curl http://127.0.0.1:8081/function/video-processing
-  
-  faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "cham*"
-  sleep 1
-  curl -X POST -d '{"num_of_rows": 700, "num_of_cols": 400}' http://127.0.0.1:8081/function/chameleon &> chameleon.output
-  
-  faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "dyn*"
-  sleep 1
-  curl -X POST -d '{"username": "Tsinghua", "random_len": 1000}' http://127.0.0.1:8081/function/dynamic-html &> dynamic-html.output
-  
-  faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "cry*"
-  sleep 1
-  curl -X POST -H "Content-Type: application/json" -d '{"length_of_message": 2000, "num_of_iterations": 5000}' http://127.0.0.1:8081/function/crypto
-  
-  faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "image-fl*"
-  sleep 1
-  curl http://127.0.0.1:8081/function/image-flip-rotate
+  for id in "" "_1" "_2"; do
+    faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "pyaes${id}"
+    sleep 1
+    curl -X POST http://127.0.0.1:8081/function/pyaes${id} -d '{"length_of_message": 2000, "num_of_iterations": 200}'
+    
+    faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "image-processing${id}"
+    sleep 1
+    curl http://127.0.0.1:8081/function/image-processing${id}
+    
+    faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "image-recognition${id}"
+    sleep 3
+    curl http://127.0.0.1:8081/function/image-recognition${id}
+    
+    faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "video-processing${id}"
+    sleep 1
+    curl http://127.0.0.1:8081/function/video-processing${id}
+    
+    faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "chameleon${id}"
+    sleep 1
+    curl -X POST -d '{"num_of_rows": 700, "num_of_cols": 400}' http://127.0.0.1:8081/function/chameleon${id} &> chameleon.output
+    
+    faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "dynamic-html${id}"
+    sleep 1
+    curl -X POST -d '{"username": "Tsinghua", "random_len": 1000}' http://127.0.0.1:8081/function/dynamic-html${id} &> dynamic-html.output
+    
+    faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "crypto${id}"
+    sleep 1
+    curl -X POST -H "Content-Type: application/json" -d '{"length_of_message": 2000, "num_of_iterations": 5000}' http://127.0.0.1:8081/function/crypto${id}
+    
+    faas-cli deploy --update=false -f /root/stack.yml -g http://127.0.0.1:8081 --filter "image-flip-rotate${id}"
+    sleep 1
+    curl http://127.0.0.1:8081/function/image-flip-rotate${id}
+  done
   
   # generate and convert checkpoint
   # NOTE by huang-jl: the first time criu running will spent a lot of time querying kernel capabilities
   # (about 2 mins) so this will spent a lot of time
   # Maybe a solution is copy criu.kdat into /run/ beforehand 
-  faasd checkpoint h-hello-world h-memory pyaes image-processing image-recognition video-processing chameleon dynamic-html crypto image-flip-rotate
+  faasd checkpoint h-hello-world h-memory \
+    pyaes image-processing image-recognition video-processing chameleon dynamic-html crypto image-flip-rotate \
+    pyaes_1 image-processing_1 image-recognition_1 video-processing_1 chameleon_1 dynamic-html_1 crypto_1 image-flip-rotate_1 \
+    pyaes_2 image-processing_2 image-recognition_2 video-processing_2 chameleon_2 dynamic-html_2 crypto_2 image-flip-rotate_2
+
   cp /run/criu.kdat /root
 
   # clear container and restart faasd
@@ -185,23 +191,25 @@ function functional_test() {
   
   # belows are all switch by default
   for ((i = 1; i <= 3; i++)); do
-    curl -X POST http://127.0.0.1:8081/invoke/h-memory -d '{"size": 12345678}'
-    
-    curl -X POST http://127.0.0.1:8081/invoke/pyaes -d '{"length_of_message": 4000, "num_of_iterations": 120}'
-    
-    curl http://127.0.0.1:8081/invoke/image-processing
-    
-    curl http://127.0.0.1:8081/invoke/image-recognition
-    
-    curl http://127.0.0.1:8081/invoke/video-processing
-    
-    curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 500}' http://127.0.0.1:8081/invoke/chameleon &> chameleon-${i}-cr.log
-    
-    curl -X POST -d '{"username": "Peking", "random_len": 1554}' http://127.0.0.1:8081/invoke/dynamic-html &> dynamic-html-${i}-cr.log
+    for id in "" "_1" "_2"; do
+      curl -X POST http://127.0.0.1:8081/invoke/h-memory$id -d '{"size": 12345678}'
+      
+      curl -X POST http://127.0.0.1:8081/invoke/pyaes$id -d '{"length_of_message": 4000, "num_of_iterations": 120}'
+      
+      curl http://127.0.0.1:8081/invoke/image-processing$id
+      
+      curl http://127.0.0.1:8081/invoke/image-recognition$id
+      
+      curl http://127.0.0.1:8081/invoke/video-processing$id
+      
+      curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 500}' http://127.0.0.1:8081/invoke/chameleon$id &> chameleon-${i}-cr.log
+      
+      curl -X POST -d '{"username": "Peking", "random_len": 1554}' http://127.0.0.1:8081/invoke/dynamic-html$id &> dynamic-html-${i}-cr.log
   
-    curl -X POST -H "Content-Type: application/json" -d '{"length_of_message": 2000, "num_of_iterations": 10000}' http://127.0.0.1:8081/invoke/crypto
+      curl -X POST -H "Content-Type: application/json" -d '{"length_of_message": 2000, "num_of_iterations": 10000}' http://127.0.0.1:8081/invoke/crypto$id
   
-    curl http://127.0.0.1:8081/invoke/image-flip-rotate
+      curl http://127.0.0.1:8081/invoke/image-flip-rotate$id
+    done
   done
 
   curl http://127.0.0.1:8081/system/metrics > /tmp/metrics.output
@@ -217,8 +225,8 @@ generate_cp
 sleep 1
 
 #switch_test
-baseline_test
-#functional_test
+#baseline_test
+functional_test
 
 echo "Finish testing, copying logs..."
 cp /tmp/faasd.log /root

@@ -4,24 +4,72 @@ set -e
 WORKDIR=/root/test
 TEMPDIR=/run
 
-function show_memory_usage() {
+function cleanup() {
+  echo "kill faasd"
+  pkill faasd || true
   while true; do
-    date
-    free -h
-    sleep 1
+    if ps -ef | grep "[p]rovider" ; then
+      sleep 2
+    else
+      break
+    fi
   done
-}
 
-function kill_ctrs() {
-  for name in $(ctr t ls -q); do
-    ctr t kill -s 9 $name
+  echo "kill fwatchdog"
+  pkill -9 fwatchdog || true
+  sleep 5
+
+  echo "umount app overlay"
+  for x in $(df -ah | grep home/app | awk '{print $NF}'); do
+    umount $x
   done
+
+  echo "clean containers"
+  for name in $(ctr t ls -q); do
+    ctr t kill -s 9 $name || true
+  done
+  sleep 1
   ctr c rm $(ctr c ls -q) || true
 
   for name in $(ctr -n openfaas-fn t ls -q); do
-    ctr -n openfaas-fn t kill -s 9 $name
+    ctr -n openfaas-fn t kill -s 9 $name || true
   done
+  sleep 1
   ctr -n openfaas-fn c rm $(ctr -n openfaas-fn c ls -q) || true
+  sleep 5
+
+  local number_of_cts=$(ctr -n openfaas-fn c ls -q | wc -l)
+  if [ $number_of_cts -ne 0 ]; then
+    echo "kill container failed"
+    exit 1
+  fi
+  number_of_cts=$(ctr c ls -q | wc -l)
+  if [ $number_of_cts -ne 0 ]; then
+    echo "kill container failed"
+    exit 1
+  fi
+
+  echo "kill containerd"
+  pkill containerd || true
+  while true; do
+    if ps -ef | grep "[c]ontainerd" ; then
+      sleep 2
+    else
+      break
+    fi
+  done
+
+  echo "umount overlay under /var/lib/faasd/app/merged/"
+  umount /var/lib/faasd/app/merged/* || true
+  rm -rf /var/lib/faasd/checkpoints/criu-r-workdir/*
+}
+
+function show_memory_usage() {
+  while true; do
+    date
+    cat /sys/fs/cgroup/openfaas-fn/memory.current
+    sleep 1
+  done
 }
 
 
@@ -130,15 +178,9 @@ if [ -e $OUTPUT ]; then
 fi
 
 # clean output from last round
-rm -rf /var/lib/faasd/checkpoints/criu-r-workdir/*
-
-pkill faasd || true
+cleanup
 sleep 3
-pkill containerd || true
-sleep 1
 containerd -l debug &> $TEMPDIR/containerd.log &
-sleep 5
-kill_ctrs
 sleep 5
 
 if [[ $TEST_CLASS == baseline* ]]; then
@@ -160,3 +202,5 @@ mv $TEMPDIR/faasd.log $OUTPUT
 mv $TEMPDIR/containerd.log $OUTPUT
 mv $TEMPDIR/test.log $OUTPUT
 cp $WORKDIR/faasd-testdriver/workload.json $OUTPUT
+cp /root/go/src/github.com/openfaas/faasd/pkg/constants.go $OUTPUT
+

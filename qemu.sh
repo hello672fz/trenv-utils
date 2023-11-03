@@ -21,8 +21,8 @@ taskset -c 0-25,52-77 qemu-system-x86_64 -kernel  ~/linux/arch/x86/boot/bzImage 
   -smp cores=26,threads=2 \
   --enable-kvm \
   -initrd /root/initramfs-6.1.0 \
-  -object memory-backend-file,id=mem1,share=on,mem-path=/dev/dax0.0,size=4G,align=2M,readonly=off \
+  -object memory-backend-file,id=mem1,share=on,mem-path=/dev/dax0.0,size=8G,align=2M,readonly=off \
   -device nvdimm,id=nvdimm1,memdev=mem1,unarmed=off \
-  -hda /root/multipass-shared/rootfs \
-  -append 'console=ttyS0 root=/dev/sda rw'
-  # -append 'console=ttyS0' \
+  -append 'console=ttyS0'
+  # -hda /root/multipass-shared/rootfs \
+  # -append 'console=ttyS0 root=/dev/sda rw'
