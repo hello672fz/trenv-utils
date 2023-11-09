@@ -130,7 +130,7 @@ functions:
     handler: ./dynamic-html
     image: jialianghuang/dynamic-html:latest
     limits:
-      memory: 64M
+      memory: 128M
       cpu: 1
     port: 5011
     environment:
@@ -141,7 +141,7 @@ functions:
     handler: ./image-processing
     image: jialianghuang/image-processing:latest
     limits:
-      memory: 224M
+      memory: 300M
       cpu: 1
     port: 5012
     environment:
@@ -152,7 +152,7 @@ functions:
     handler: ./pyaes
     image: jialianghuang/pyaes:latest
     limits:
-      memory: 64M
+      memory: 200M
       cpu: 1
     port: 5013
     environment:
@@ -163,7 +163,7 @@ functions:
     handler: ./image-recognition
     image: jialianghuang/image-recognition:latest
     limits:
-      memory: 768M
+      memory: 888M
       cpu: 2
     port: 5014
     environment:
@@ -176,7 +176,7 @@ functions:
     handler: ./video-processing
     image: jialianghuang/video-processing:latest
     limits:
-      memory: 224M
+      memory: 300M
       cpu: 1
     port: 5015
     environment:
@@ -187,7 +187,7 @@ functions:
     handler: ./crypto
     image: jialianghuang/crypto:latest
     limits:
-      memory: 84M
+      memory: 192M
       cpu: 1
     port: 5016
     environment:
@@ -198,7 +198,7 @@ functions:
     handler: ./image-flip-rotate
     image: jialianghuang/image-flip-rotate:latest
     limits:
-      memory: 560M
+      memory: 650M
       cpu: 1
     port: 5017
     environment:
@@ -209,7 +209,7 @@ functions:
     handler: ./chameleon
     image: jialianghuang/chameleon:latest
     limits:
-      memory: 300M
+      memory: 400M
       cpu: 1
     port: 5018
     environment:
@@ -220,7 +220,7 @@ functions:
     handler: ./dynamic-html
     image: jialianghuang/dynamic-html:latest
     limits:
-      memory: 64M
+      memory: 148M
       cpu: 1
     port: 5019
     environment:
@@ -231,7 +231,7 @@ functions:
     handler: ./image-processing
     image: jialianghuang/image-processing:latest
     limits:
-      memory: 224M
+      memory: 300M
       cpu: 1
     port: 5020
     environment:
@@ -242,7 +242,7 @@ functions:
     handler: ./pyaes
     image: jialianghuang/pyaes:latest
     limits:
-      memory: 64M
+      memory: 128M
       cpu: 1
     port: 5021
     environment:
@@ -253,7 +253,7 @@ functions:
     handler: ./image-recognition
     image: jialianghuang/image-recognition:latest
     limits:
-      memory: 768M
+      memory: 800M
       cpu: 2
     port: 5022
     environment:
@@ -266,7 +266,7 @@ functions:
     handler: ./video-processing
     image: jialianghuang/video-processing:latest
     limits:
-      memory: 224M
+      memory: 300M
       cpu: 1
     port: 5023
     environment:
@@ -277,7 +277,7 @@ functions:
     handler: ./crypto
     image: jialianghuang/crypto:latest
     limits:
-      memory: 84M
+      memory: 170M
       cpu: 1
     port: 5024
     environment:
@@ -288,7 +288,7 @@ functions:
     handler: ./image-flip-rotate
     image: jialianghuang/image-flip-rotate:latest
     limits:
-      memory: 560M
+      memory: 624M
       cpu: 1
     port: 5025
     environment:

@@ -74,9 +74,10 @@ function show_memory_usage() {
 
 
 function switch_test() {
+  local mem=$1
   echo "start switching test..."
   secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \
-    --pull-policy no &> $TEMPDIR/faasd.log &
+    --pull-policy no --mem $mem &> $TEMPDIR/faasd.log &
   local faasd_pid=$!
   sleep 30
   
@@ -101,9 +102,10 @@ function switch_test() {
 }
 
 function baseline_test() {
+  local mem=$1
   echo "start baseline test..."
   secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \
-    --pull-policy no --baseline &> $TEMPDIR/faasd.log &
+    --pull-policy no --baseline --mem $mem &> $TEMPDIR/faasd.log &
   local faasd_pid=$!
   sleep 15
   
@@ -164,13 +166,22 @@ function functional_test() {
   curl http://127.0.0.1:8081/system/metrics > $TEMPDIR/metrics.output
 }
 
-if [ "$#" -ne 1 ]; then
-  echo "Usage: $0 [switch | baseline | functional_test]"
+if [[ $1 == clean ]]; then
+  echo "clean up only ..."
+  cleanup
+  exit 0
+fi
+
+if [ $# -ne 2 ]; then
+  echo "usgae: bash physical-test.sh [TEST NAME] [MEM BOUND]"
   exit 1
 fi
 
 TEST_CLASS=$1
 OUTPUT=/root/test/result/$TEST_CLASS
+MEM_BOUND=$2
+
+echo "TEST NAME: $TEST_CLASS, MEM BOUND: $MEM_BOUND"
 
 if [ -e $OUTPUT ]; then
   echo "output dir $OUTPUT exist, please remove it first!"
@@ -184,9 +195,9 @@ containerd -l debug &> $TEMPDIR/containerd.log &
 sleep 5
 
 if [[ $TEST_CLASS == baseline* ]]; then
-  baseline_test
+  baseline_test $MEM_BOUND
 elif [[ $TEST_CLASS == switch* ]]; then
-  switch_test
+  switch_test $MEM_BOUND
 elif [[ $TEST_CLASS == functional_test* ]]; then
   functional_test
 else
@@ -199,8 +210,9 @@ mv $TEMPDIR/metrics.output $OUTPUT
 mv $TEMPDIR/memory_stat.output $OUTPUT
 mv $TEMPDIR/mpstat.output $OUTPUT
 mv $TEMPDIR/faasd.log $OUTPUT
-mv $TEMPDIR/containerd.log $OUTPUT
 mv $TEMPDIR/test.log $OUTPUT
+cp $TEMPDIR/containerd.log $OUTPUT
 cp $WORKDIR/faasd-testdriver/workload.json $OUTPUT
+cp $WORKDIR/faasd-testdriver/gen_trace.py $OUTPUT
 cp /root/go/src/github.com/openfaas/faasd/pkg/constants.go $OUTPUT
 
