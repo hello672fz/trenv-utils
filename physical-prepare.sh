@@ -86,6 +86,12 @@ function generate_cp() {
   done
 }
 
+# config cxl device
+daxctl disable-device -r 0 all
+daxctl destroy-device -r 0 all || true
+daxctl create-device -r 0 -a 4096
+
+bash insmod.sh
 pkill containerd || true
 pkill faasd || true
 sleep 2
@@ -103,12 +109,12 @@ containerd -l debug &> $TEMPDIR/containerd.log &
 sleep 5
 
 # download images
-apps=(h-hello-world h-memory pyaes image-processing video-processing \
-  image-recognition chameleon dynamic-html crypto image-flip-rotate)
-for app in ${apps[@]}; do
-  echo "start download $app ..."
-  ctr image pull docker.io/jialianghuang/${app}:latest
-done
+# apps=(h-hello-world h-memory pyaes image-processing video-processing \
+#   image-recognition chameleon dynamic-html crypto image-flip-rotate)
+# for app in ${apps[@]}; do
+#   echo "start download $app ..."
+#   ctr image pull docker.io/jialianghuang/${app}:latest
+# done
 
 cp resolv.conf $WORKDIR
 cd $WORKDIR

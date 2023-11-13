@@ -49,7 +49,10 @@ done
 
 for mem in "$@"; do
   bash physical-test.sh switch-${suffix}-${mem}g $mem
+  bash physical-collect-res.sh switch-${suffix}-${mem}g
+
   bash physical-test.sh baseline-${suffix}-${mem}g $mem
+  bash physical-collect-res.sh baseline-${suffix}-${mem}g
   # echo "${RES_DIR}/switch-${suffix}-${mem}g $mem"
   # echo "${RES_DIR}/baseline-${suffix}-${mem}g $mem"
 done

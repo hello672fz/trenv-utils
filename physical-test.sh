@@ -76,6 +76,9 @@ function show_memory_usage() {
 function switch_test() {
   local mem=$1
   echo "start switching test..."
+  cp /root/downloads/switch-criu /usr/local/sbin/criu
+  criu check
+
   secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \
     --pull-policy no --mem $mem &> $TEMPDIR/faasd.log &
   local faasd_pid=$!
@@ -91,7 +94,7 @@ function switch_test() {
   mpstat 1 > $TEMPDIR/mpstat.output &
   local mpstat_pid=$!
 
-  source /root/venv/faasd-test/bin/activate
+  source /root/miniconda3/bin/activate faasd-test
   cd faasd-testdriver
   python main.py 2>&1 | tee $TEMPDIR/test.log
    
@@ -119,13 +122,44 @@ function baseline_test() {
   mpstat 1 > $TEMPDIR/mpstat.output &
   local mpstat_pid=$!
 
-  source /root/venv/faasd-test/bin/activate
+  source /root/miniconda3/bin/activate faasd-test
   cd faasd-testdriver
   python main.py 2>&1 | tee $TEMPDIR/test.log
    
   curl http://127.0.0.1:8081/system/metrics > $TEMPDIR/metrics.output
-  kill $mpstat_pid
-  kill $mem_stat_pid
+  kill $mpstat_pid || true
+  kill $mem_stat_pid || true
+  # kill $faasd_pid
+}
+
+function criu_test() {
+  local mem=$1
+  echo "start raw criu test..."
+  cp /root/downloads/baseline-criu /usr/local/sbin/criu
+  criu check
+
+  secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \
+    --pull-policy no --baseline --criu --mem $mem &> $TEMPDIR/faasd.log &
+  local faasd_pid=$!
+  sleep 15
+  
+  cd $WORKDIR
+  # register new container
+  faas-cli register -f $WORKDIR/stack.yml -g http://127.0.0.1:8081
+  sleep 2
+
+  show_memory_usage &> $TEMPDIR/memory_stat.output &
+  local mem_stat_pid=$!
+  mpstat 1 > $TEMPDIR/mpstat.output &
+  local mpstat_pid=$!
+
+  source /root/miniconda3/bin/activate faasd-test
+  cd faasd-testdriver
+  python main.py 2>&1 | tee $TEMPDIR/test.log
+   
+  curl http://127.0.0.1:8081/system/metrics > $TEMPDIR/metrics.output
+  kill $mpstat_pid || true
+  kill $mem_stat_pid || true
   # kill $faasd_pid
 }
 
@@ -198,21 +232,12 @@ if [[ $TEST_CLASS == baseline* ]]; then
   baseline_test $MEM_BOUND
 elif [[ $TEST_CLASS == switch* ]]; then
   switch_test $MEM_BOUND
+elif [[ $TEST_CLASS == criu* ]]; then
+  criu_test $MEM_BOUND
 elif [[ $TEST_CLASS == functional_test* ]]; then
   functional_test
 else
   echo "unknown test class: $TEST_CLASS"
   exit 1
 fi
-
-mkdir -p $OUTPUT
-mv $TEMPDIR/metrics.output $OUTPUT
-mv $TEMPDIR/memory_stat.output $OUTPUT
-mv $TEMPDIR/mpstat.output $OUTPUT
-mv $TEMPDIR/faasd.log $OUTPUT
-mv $TEMPDIR/test.log $OUTPUT
-cp $TEMPDIR/containerd.log $OUTPUT
-cp $WORKDIR/faasd-testdriver/workload.json $OUTPUT
-cp $WORKDIR/faasd-testdriver/gen_trace.py $OUTPUT
-cp /root/go/src/github.com/openfaas/faasd/pkg/constants.go $OUTPUT
 
