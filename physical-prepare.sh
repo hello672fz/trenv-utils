@@ -18,6 +18,8 @@ function kill_ctrs() {
 
 function generate_cp() {
   echo "start generate and convert checkpoint image for functions..."
+  cp /root/downloads/switch-criu /usr/local/sbin/criu
+  criu check
   cd /var/lib/faasd
   secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \
     --pull-policy no --no-bgtask &> $TEMPDIR/faasd.log &

@@ -106,9 +106,10 @@ function switch_test() {
 
 function baseline_test() {
   local mem=$1
+  local gc=$2
   echo "start baseline test..."
   secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \
-    --pull-policy no --baseline --mem $mem &> $TEMPDIR/faasd.log &
+    --pull-policy no --baseline --mem $mem --gc ${gc} &> $TEMPDIR/faasd.log &
   local faasd_pid=$!
   sleep 15
   
@@ -134,12 +135,13 @@ function baseline_test() {
 
 function criu_test() {
   local mem=$1
+  local gc=$2
   echo "start raw criu test..."
   cp /root/downloads/baseline-criu /usr/local/sbin/criu
   criu check
 
   secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \
-    --pull-policy no --baseline --criu --mem $mem &> $TEMPDIR/faasd.log &
+    --pull-policy no --baseline --criu --mem $mem --gc $gc &> $TEMPDIR/faasd.log &
   local faasd_pid=$!
   sleep 15
   
@@ -166,7 +168,7 @@ function criu_test() {
 function functional_test() {
   echo "start functional test..."
   secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \
-    --pull-policy no --no-bgtask &> $TEMPDIR/faasd.log &
+    --pull-policy no --no-bgtask --baseline --criu &> $TEMPDIR/faasd.log &
   sleep 1
 
   cd $WORKDIR
@@ -174,30 +176,35 @@ function functional_test() {
   faas-cli register -f $WORKDIR/stack.yml -g http://127.0.0.1:8081
   sleep 2
 
+  rm /root/test/*.log
+
   curl http://127.0.0.1:8081/invoke/h-hello-world
   
   # belows are all switch by default
-  for ((i = 1; i <= 3; i++)); do
-    curl -X POST http://127.0.0.1:8081/invoke/h-memory -d '{"size": 12345678}'
+  for ((i = 1; i <= 1; i++)); do
+    # curl -X POST http://127.0.0.1:8081/invoke/h-memory -d '{"size": 12345678}'
+    curl -X POST http://127.0.0.1:8081/invoke/pyaes -d '{"length_of_message": 4000, "num_of_iterations": 120}' >> pyaes.log
     
-    curl -X POST http://127.0.0.1:8081/invoke/pyaes -d '{"length_of_message": 4000, "num_of_iterations": 120}'
+    curl http://127.0.0.1:8081/invoke/image-processing >> image-processing.log
     
-    curl http://127.0.0.1:8081/invoke/image-processing
+    curl http://127.0.0.1:8081/invoke/image-recognition >> image-recognition.log
     
-    curl http://127.0.0.1:8081/invoke/image-recognition
+    curl http://127.0.0.1:8081/invoke/video-processing >> video-processing.log
     
-    curl http://127.0.0.1:8081/invoke/video-processing
+    curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 500}' http://127.0.0.1:8081/invoke/chameleon >> chameleon.log
     
-    curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 500}' http://127.0.0.1:8081/invoke/chameleon &> chameleon-${i}-cr.log
-    
-    curl -X POST -d '{"username": "Peking", "random_len": 1554}' http://127.0.0.1:8081/invoke/dynamic-html &> dynamic-html-${i}-cr.log
+    curl -X POST -d '{"username": "Peking", "random_len": 1554}' http://127.0.0.1:8081/invoke/dynamic-html >> dynamic-html.log
   
-    curl -X POST -H "Content-Type: application/json" -d '{"length_of_message": 2000, "num_of_iterations": 10000}' http://127.0.0.1:8081/invoke/crypto
+    curl -X POST -H "Content-Type: application/json" -d '{"length_of_message": 2000, "num_of_iterations": 10000}' http://127.0.0.1:8081/invoke/crypto >> crypto.log
   
-    curl http://127.0.0.1:8081/invoke/image-flip-rotate
+    curl http://127.0.0.1:8081/invoke/image-flip-rotate >> image-flip-rotate.log
   done
 
-  curl http://127.0.0.1:8081/system/metrics > $TEMPDIR/metrics.output
+  curl http://127.0.0.1:8081/system/metrics > metrics.output
+
+  for file in $(ls *.log); do
+    grep -Po 'latency":([0-9\.]+)' $file > lat-${file}
+  done
 }
 
 if [[ $1 == clean ]]; then
@@ -206,16 +213,17 @@ if [[ $1 == clean ]]; then
   exit 0
 fi
 
-if [ $# -ne 2 ]; then
-  echo "usgae: bash physical-test.sh [TEST NAME] [MEM BOUND]"
+if [ $# -ne 3 ]; then
+  echo "usgae: bash physical-test.sh [TEST NAME] [MEM BOUND] [GC]"
   exit 1
 fi
 
 TEST_CLASS=$1
 OUTPUT=/root/test/result/$TEST_CLASS
 MEM_BOUND=$2
+GC_TIME=$3
 
-echo "TEST NAME: $TEST_CLASS, MEM BOUND: $MEM_BOUND"
+echo "TEST NAME: $TEST_CLASS, MEM BOUND: $MEM_BOUND GC_TIME: $GC_TIME"
 
 if [ -e $OUTPUT ]; then
   echo "output dir $OUTPUT exist, please remove it first!"
@@ -229,11 +237,11 @@ containerd -l debug &> $TEMPDIR/containerd.log &
 sleep 5
 
 if [[ $TEST_CLASS == baseline* ]]; then
-  baseline_test $MEM_BOUND
+  baseline_test $MEM_BOUND $GC_TIME
 elif [[ $TEST_CLASS == switch* ]]; then
   switch_test $MEM_BOUND
 elif [[ $TEST_CLASS == criu* ]]; then
-  criu_test $MEM_BOUND
+  criu_test $MEM_BOUND $GC_TIME
 elif [[ $TEST_CLASS == functional_test* ]]; then
   functional_test
 else
