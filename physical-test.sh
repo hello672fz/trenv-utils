@@ -19,6 +19,9 @@ function cleanup() {
   pkill -9 fwatchdog || true
   sleep 5
 
+  echo "kill criu"
+  pkill criu || true
+
   echo "umount app overlay"
   for x in $(df -ah | grep home/app | awk '{print $NF}'); do
     umount $x
@@ -130,9 +133,10 @@ function baseline_test() {
 }
 
 function functional_test() {
+  sleep 1
   echo "start functional test..."
   secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \
-    --pull-policy no --no-bgtask &> $TEMPDIR/faasd.log &
+    --pull-policy no --no-bgtask --baseline --start-method lazy &> $TEMPDIR/faasd.log &
   sleep 1
 
   cd $WORKDIR
@@ -141,29 +145,48 @@ function functional_test() {
   sleep 2
 
   curl http://127.0.0.1:8081/invoke/h-hello-world
+  curl -X POST http://127.0.0.1:8081/invoke/h-memory -d '{"size": 12345678}'
+  
+  curl -X POST http://127.0.0.1:8081/invoke/pyaes -d '{"length_of_message": 4000, "num_of_iterations": 120}'
+  
+  curl http://127.0.0.1:8081/invoke/image-processing
+  
+  curl http://127.0.0.1:8081/invoke/image-recognition
+  
+  curl http://127.0.0.1:8081/invoke/video-processing
+  
+  curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 500}' http://127.0.0.1:8081/invoke/chameleon &> chameleon-${i}-cr.log
+  
+  curl -X POST -d '{"username": "Peking", "random_len": 1554}' http://127.0.0.1:8081/invoke/dynamic-html &> dynamic-html-${i}-cr.log
+   
+  curl -X POST -H "Content-Type: application/json" -d '{"length_of_message": 2000, "num_of_iterations": 10000}' http://127.0.0.1:8081/invoke/crypto
+  
+  curl http://127.0.0.1:8081/invoke/image-flip-rotate
+
+  pkill criu || true
   
   # belows are all switch by default
-  for ((i = 1; i <= 3; i++)); do
-    curl -X POST http://127.0.0.1:8081/invoke/h-memory -d '{"size": 12345678}'
-    
-    curl -X POST http://127.0.0.1:8081/invoke/pyaes -d '{"length_of_message": 4000, "num_of_iterations": 120}'
-    
-    curl http://127.0.0.1:8081/invoke/image-processing
-    
-    curl http://127.0.0.1:8081/invoke/image-recognition
-    
-    curl http://127.0.0.1:8081/invoke/video-processing
-    
-    curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 500}' http://127.0.0.1:8081/invoke/chameleon &> chameleon-${i}-cr.log
-    
-    curl -X POST -d '{"username": "Peking", "random_len": 1554}' http://127.0.0.1:8081/invoke/dynamic-html &> dynamic-html-${i}-cr.log
-  
-    curl -X POST -H "Content-Type: application/json" -d '{"length_of_message": 2000, "num_of_iterations": 10000}' http://127.0.0.1:8081/invoke/crypto
-  
-    curl http://127.0.0.1:8081/invoke/image-flip-rotate
-  done
+  # for ((i = 1; i <= 3; i++)); do
+  #   curl -X POST http://127.0.0.1:8081/invoke/h-memory -d '{"size": 12345678}'
+  #   
+  #   curl -X POST http://127.0.0.1:8081/invoke/pyaes -d '{"length_of_message": 4000, "num_of_iterations": 120}'
+  #   
+  #   curl http://127.0.0.1:8081/invoke/image-processing
+  #   
+  #   curl http://127.0.0.1:8081/invoke/image-recognition
+  #   
+  #   curl http://127.0.0.1:8081/invoke/video-processing
+  #   
+  #   curl -X POST -d '{"num_of_rows": 500, "num_of_cols": 500}' http://127.0.0.1:8081/invoke/chameleon &> chameleon-${i}-cr.log
+  #   
+  #   curl -X POST -d '{"username": "Peking", "random_len": 1554}' http://127.0.0.1:8081/invoke/dynamic-html &> dynamic-html-${i}-cr.log
+  # 
+  #   curl -X POST -H "Content-Type: application/json" -d '{"length_of_message": 2000, "num_of_iterations": 10000}' http://127.0.0.1:8081/invoke/crypto
+  # 
+  #   curl http://127.0.0.1:8081/invoke/image-flip-rotate
+  # done
 
-  curl http://127.0.0.1:8081/system/metrics > $TEMPDIR/metrics.output
+  curl http://127.0.0.1:8081/system/metrics
 }
 
 if [[ $1 == clean ]]; then
@@ -205,14 +228,14 @@ else
   exit 1
 fi
 
-mkdir -p $OUTPUT
-mv $TEMPDIR/metrics.output $OUTPUT
-mv $TEMPDIR/memory_stat.output $OUTPUT
-mv $TEMPDIR/mpstat.output $OUTPUT
-mv $TEMPDIR/faasd.log $OUTPUT
-mv $TEMPDIR/test.log $OUTPUT
-cp $TEMPDIR/containerd.log $OUTPUT
-cp $WORKDIR/faasd-testdriver/workload.json $OUTPUT
-cp $WORKDIR/faasd-testdriver/gen_trace.py $OUTPUT
-cp /root/go/src/github.com/openfaas/faasd/pkg/constants.go $OUTPUT
+# mkdir -p $OUTPUT
+# mv $TEMPDIR/metrics.output $OUTPUT
+# mv $TEMPDIR/memory_stat.output $OUTPUT
+# mv $TEMPDIR/mpstat.output $OUTPUT
+# mv $TEMPDIR/faasd.log $OUTPUT
+# mv $TEMPDIR/test.log $OUTPUT
+# cp $TEMPDIR/containerd.log $OUTPUT
+# cp $WORKDIR/faasd-testdriver/workload.json $OUTPUT
+# cp $WORKDIR/faasd-testdriver/gen_trace.py $OUTPUT
+# cp /root/go/src/github.com/openfaas/faasd/pkg/constants.go $OUTPUT
 

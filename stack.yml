@@ -13,6 +13,14 @@ functions:
     environment:
       port: 9000
 
+  hw-test:
+    lang: hybrid-py
+    handler: ./h-hello-world
+    image: jialianghuang/hw-test:latest
+    limits:
+      memory: 128M
+      cpu: 1
+
   h-hello-world:
     lang: hybrid-py
     handler: ./h-hello-world
