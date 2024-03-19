@@ -16,3 +16,4 @@ for mod in ${container_modules[@]}; do
   modprobe $mod
 done
 
+modprobe rdma_rxe
