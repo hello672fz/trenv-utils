@@ -163,6 +163,7 @@ function print_help_message() {
     --start-method <METHOD> Start method used by faasd, currently only support cold and criu, default is cold.
     --gc <TIME>             The period of garbage routine to scan, in Minute. (Only useful when --baseline)
                             Default is 10 min.
+    --no-bgtask             Disable the background task in faasd.
     --baseline              Start faasd in baseline mode.
     --functional            Start functional test, this will not using faasd-testdriver and not using trace to test.
                             Note that functional_test will not collect result to output dir.

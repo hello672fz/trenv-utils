@@ -197,6 +197,7 @@ download_ctr_images
 cp resolv.conf $WORKDIR
 cd $WORKDIR
 faasd install
+umount /var/lib/faasd/checkpoints || true
 rm -rf /var/lib/faasd/checkpoints
 mkdir -p /var/lib/faasd/checkpoints
 mount -t tmpfs tmpfs /var/lib/faasd/checkpoints -o size=8G
