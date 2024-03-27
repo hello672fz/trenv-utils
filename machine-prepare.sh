@@ -19,13 +19,31 @@ DIR=`dirname "${THIS}"`
 
 
 function prepare_rxe() {
+  while true; do
+    read -p "start configure rxe ${ETH_INTERFACE} in [RDMA] mode? " yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) exit 1;;
+        * ) echo "Please answer yes or no.";;
+    esac
+  done
+  if ! ip addr show ${ETH_INTERFACE}; then
+    ip link add  ${ETH_INTERFACE} type dummy
+    ip address add 172.16.2.1/24 dev ${ETH_INTERFACE}
+    ip link set ${ETH_INTERFACE} up
+  fi
   # create rxe device
-  rdma link add rxe_${ETH_INTERFACE} type rxe netdev ${ETH_INTERFACE}
-  stdbuf -o0 ${WORKDIR}/pseudo-mm-rdma-server 50000 &> $TEMPDIR/rdma-server.log &
-  local ip_address=$(ip -f inet addr show ${ETH_INTERFACE} | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')
-  echo "prepare rxe for interface $ETH_INTERFACE: ip address is ${ip_address}"
-  sleep 5
-  modprobe pseudo_mm_rdma sport=50000 sip="${ip_address}" cip="${ip_address}"
+  if ! rdma link | grep ${ETH_INTERFACE} ; then
+    rdma link add rxe_${ETH_INTERFACE} type rxe netdev ${ETH_INTERFACE}
+  fi
+  if ! lsmod | grep pseudo_mm_rdma; then
+    echo "do not found pseudo_mm_rdma modules, start rdma server and insmod..."
+    stdbuf -o0 ${WORKDIR}/pseudo-mm-rdma-server 50000 &> $TEMPDIR/rdma-server.log &
+    local ip_address=$(ip -f inet addr show ${ETH_INTERFACE} | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')
+    echo "prepare rxe for interface $ETH_INTERFACE: ip address is ${ip_address}"
+    sleep 5
+    modprobe pseudo_mm_rdma sport=50000 sip="${ip_address}" cip="${ip_address}"
+  fi
 }
 
 function download_ctr_images() {

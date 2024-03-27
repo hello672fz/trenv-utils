@@ -14,6 +14,7 @@ GC_CRITERION=10 # default gc is 10 min
 NO_BG_TASK=0  # default enable bg task
 TEST_NAME=""
 FUNCTIONAL_ITER=0
+NO_TEST=0
 
 # import test-common.sh
 THIS=`readlink -f "${BASH_SOURCE[0]}" 2>/dev/null||echo $0`
@@ -212,6 +213,10 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    --no-test)
+      NO_TEST=1
+      shift
+      ;;
     -h|--help)
       print_help_message
       exit 0
@@ -229,7 +234,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 output=${OUTDIR}/${TEST_NAME}
-if [ -e $output ]; then
+if [ -e $output ] && [ $NO_TEST -eq 0 ]; then
   echo "output dir $output exist, please remove it first!"
   exit 1
 fi
@@ -242,6 +247,10 @@ if [ $(is_process_exist faasd) == "true" ]; then
   exit 1
 fi
 start_faasd $MEM $IS_BASELINE $START_METHOD $NO_BG_TASK $GC_CRITERION
+if [ $NO_TEST -eq 1 ]; then
+  exit 0
+fi
+
 sleep 20
 if [ $FUNCTIONAL_ITER -ge 1 ]; then
   functional_test $FUNCTIONAL_ITER
