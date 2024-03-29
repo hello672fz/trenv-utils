@@ -15,6 +15,8 @@ NO_BG_TASK=0  # default enable bg task
 TEST_NAME=""
 FUNCTIONAL_ITER=0
 NO_TEST=0
+NO_REUSE=0
+IDLE_NUM=-1
 
 # import test-common.sh
 THIS=`readlink -f "${BASH_SOURCE[0]}" 2>/dev/null||echo $0`
@@ -48,7 +50,7 @@ function cleanup() {
   echo "kill containerd"
   kill_process containerd
   while true; do
-    if ps -ef | grep "[c]ontainerd" ; then
+    if pgrep -x containerd ; then
       sleep 2
     else
       break
@@ -171,6 +173,11 @@ function print_help_message() {
     --clean                 This will clean the process used by test (including containers, fassd and containerd)
                             , unmount the overlayfs and remove the criu-r-workdir. This should called before start
                             a new round of test.
+    --no-test               Do not start test, only start containerd and faasd. (Users need register themselves)
+    --no-reuse              Pass --no-reuse option to faasd, which will not reuse container (i.e., start or switch
+                            new instances for each invocation).
+    --idle-num   <NUM>      Number of idle containers initialized by faasd at the beginning, only valid for switch (i.e.,
+                            not baseline)
     -h | --help             Print this help message.
 
 
@@ -217,6 +224,15 @@ while [[ $# -gt 0 ]]; do
       NO_TEST=1
       shift
       ;;
+    --no-reuse)
+      NO_REUSE=1
+      shift
+      ;;
+    --idle-num)
+      IDLE_NUM=$2
+      shift
+      shift
+      ;;
     -h|--help)
       print_help_message
       exit 0
@@ -246,12 +262,12 @@ if [ $(is_process_exist faasd) == "true" ]; then
   echo "faasd is still running"
   exit 1
 fi
-start_faasd $MEM $IS_BASELINE $START_METHOD $NO_BG_TASK $GC_CRITERION
+start_faasd $MEM $IS_BASELINE $START_METHOD $NO_BG_TASK $GC_CRITERION $NO_REUSE $IDLE_NUM
 if [ $NO_TEST -eq 1 ]; then
   exit 0
 fi
 
-sleep 20
+sleep 2
 if [ $FUNCTIONAL_ITER -ge 1 ]; then
   functional_test $FUNCTIONAL_ITER
 else

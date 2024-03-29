@@ -16,6 +16,9 @@ IMAGES = [
     "dynamic-html",
     "crypto",
     "image-flip-rotate",
+    "json-serde",
+    "js-json-serde",
+    "pagerank",
 ]
 PAGE_SIZE = 4096
 

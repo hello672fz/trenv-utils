@@ -32,10 +32,15 @@ function gen_file_info() {
   cd -
 }
 
-cd ../..
-bash test.sh --no-bgtask --no-test --baseline --start-method criu
-sleep 3
-cd -
+# cd ../..
+# bash test.sh --no-bgtask --no-test --baseline --start-method criu
+# sleep 3
+# cd -
+containerd &> /run/containerd.log &
+sleep 1
+secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \
+  --pull-policy no --no-bgtask --baseline --start-method criu &> /run/faasd.log &
+sleep 2
 
 cd /root/test
 # register new container
@@ -94,4 +99,24 @@ sleep 1
 echo 1 > /proc/sys/vm/drop_caches
 curl http://127.0.0.1:8081/invoke/image-flip-rotate
 gen_file_info image-flip-rotate
+curl http://127.0.0.1:8081/danger/kill
+sleep 1
+
+
+echo 1 > /proc/sys/vm/drop_caches
+curl -X POST http://127.0.0.1:8081/invoke/json-serde -d '{"name": "3"}'
+gen_file_info json-serde
+curl http://127.0.0.1:8081/danger/kill
+sleep 1
+
+echo 1 > /proc/sys/vm/drop_caches
+curl -X POST -H "Content-Type: application/json" -d '{"name": "5"}' http://127.0.0.1:8081/invoke/js-json-serde
+gen_file_info js-json-serde
+curl http://127.0.0.1:8081/danger/kill
+sleep 1
+
+echo 1 > /proc/sys/vm/drop_caches
+curl -X POST -d '{"size": 75000, "out": 12}' http://127.0.0.1:8081/invoke/pagerank
+gen_file_info pagerank
+curl http://127.0.0.1:8081/danger/kill
 sleep 1

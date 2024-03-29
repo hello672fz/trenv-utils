@@ -5,6 +5,7 @@ TEMPDIR=/run
 OUTDIR=/root/test/result
 RAW_CRIU_PATH=/root/downloads/raw-criu
 SWITCH_CRIU_PATH=/root/downloads/switch-criu
+LAZY_CRIU_PATH=/root/downloads/lazy-criu
 
 if [ ! -e $RAW_CRIU_PATH ]; then
   echo "raw criu not exist: $RAW_CRIU_PATH"
@@ -19,6 +20,13 @@ fi
 # (more than 2 mins) , so here we run criu check and let it generates criu.kdat
 function enable_raw_criu() {
   cp $RAW_CRIU_PATH /usr/local/sbin/criu
+  echo "start criu check..."
+  criu check
+  echo "criu check finish"
+}
+
+function enable_lazy_criu() {
+  cp $LAZY_CRIU_PATH /usr/local/sbin/criu
   echo "start criu check..."
   criu check
   echo "criu check finish"
@@ -54,10 +62,10 @@ function kill_process() {
   if [ -z "$process_name" ]; then
     echo "empty process name to kill"
   fi
-  if pkill -f "$process_name"; then
+  if pkill -x "$process_name"; then
     sleep 1
-    if pgrep -f "$process_name" > /dev/null; then
-      pkill -9 -f $process_name || true
+    if pgrep -x "$process_name" > /dev/null; then
+      pkill -9 -x $process_name || true
     fi
   else
       # If fails to find the process, capture its exit status
@@ -75,7 +83,7 @@ function kill_process() {
 
 function is_process_exist() {
   local name=$1
-  if pgrep -f $name > /dev/null; then
+  if pgrep -x $name > /dev/null; then
     echo "true"
   else 
     local pgrep_exit_status=$?
@@ -103,12 +111,15 @@ function start_containerd() {
 }
 
 
+# Only used by test.sh for now
 # argument:
 # 1: mem bound (in GB)
-# 2: is_baseline
+# 2: is_baseline (boolean)
 # 3: start_method ("cold" or "criu")
-# 4: no_bg_task
+# 4: no_bg_task (boolean)
 # 5: gc_criterion (in minutes)
+# 6: no_reuse (boolean)
+# 7: idle_num (integer)
 #
 # exmaple:
 # 32GB is_baseline:true start_method:cold no_bg_task:true gc_criterion:10
@@ -119,6 +130,9 @@ function start_faasd() {
   local start_method=$3
   local no_bg_task=$4
   local gc_criterion=$5
+  local no_reuse=$6
+  local idle_num=$7
+
   local args="--mem ${mem_bound}"
   if [ $is_baseline -eq 1 ]; then
     args="${args} --baseline"
@@ -127,6 +141,8 @@ function start_faasd() {
     args="${args} --start-method ${start_method}"
     if [ "${start_method}" == "criu" ]; then
       enable_raw_criu
+    elif [ "${start_method}" == "lazy" ]; then
+      enable_lazy_criu
     else
       enable_switch_criu
     fi
@@ -136,6 +152,12 @@ function start_faasd() {
   fi
   if [ ! -z "${gc_criterion}" ]; then
     args="${args} --gc ${gc_criterion}"
+  fi
+  if [ $no_reuse -eq 1 ]; then
+    args="${args} --no-reuse"
+  fi
+  if [ $idle_num -gt 0 ]; then
+    args="${args} --idle-num ${idle_num}"
   fi
   echo "start faasd with args: ${args}"
   secret_mount_path=/var/lib/faasd/secrets basic_auth=true faasd provider \

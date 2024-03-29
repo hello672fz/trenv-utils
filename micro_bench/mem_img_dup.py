@@ -16,6 +16,9 @@ IMAGES = [
     "image-flip-rotate",
     "h-hello-world",
     "h-memory",
+    "json-serde",
+    "js-json-serde",
+    "pagerank",
 ]
 PAGE_SIZE = 4096
 

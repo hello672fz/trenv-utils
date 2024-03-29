@@ -114,6 +114,41 @@ functions:
     environment:
       port: 9009
 
+
+  js-json-serde:
+    lang: hybrid-node18
+    handler: ./js-json-serde
+    image: jialianghuang/js-json-serde:latest
+    limits:
+      memory: 160M
+      cpu: 1
+    port: 5010
+    environment:
+      port: 9010
+
+  json-serde:
+    lang: hybrid-py
+    handler: ./json-serde
+    image: jialianghuang/json-serde:latest
+    limits:
+      memory: 160M
+      cpu: 1
+    port: 5011
+    environment:
+      port: 9011
+
+  pagerank:
+    lang: hybrid-py
+    handler: ./pagerank
+    image: jialianghuang/pagerank:latest
+    limits:
+      memory: 160M
+      cpu: 1
+    port: 5012
+    environment:
+      port: 9012
+
+
   chameleon_1:
     lang: hybrid-py
     handler: ./chameleon
@@ -121,9 +156,9 @@ functions:
     limits:
       memory: 300M
       cpu: 1
-    port: 5010
+    port: 5102
     environment:
-      port: 9010
+      port: 9102 
 
   dynamic-html_1:
     lang: hybrid-py
@@ -132,9 +167,9 @@ functions:
     limits:
       memory: 128M
       cpu: 1
-    port: 5011
+    port: 5103
     environment:
-      port: 9011
+      port: 9103
 
   image-processing_1:
     lang: hybrid-py
@@ -143,9 +178,9 @@ functions:
     limits:
       memory: 300M
       cpu: 1
-    port: 5012
+    port: 5104
     environment:
-      port: 9012
+      port: 9104
 
   pyaes_1:
     lang: hybrid-py
@@ -154,9 +189,9 @@ functions:
     limits:
       memory: 200M
       cpu: 1
-    port: 5013
+    port: 5105
     environment:
-      port: 9013
+      port: 9105
 
   image-recognition_1:
     lang: hybrid-py
@@ -165,9 +200,9 @@ functions:
     limits:
       memory: 888M
       cpu: 2
-    port: 5014
+    port: 5106
     environment:
-      port: 9014
+      port: 9106
       exec_timeout: 50
       write_timeout: 55
 
@@ -178,9 +213,9 @@ functions:
     limits:
       memory: 300M
       cpu: 1
-    port: 5015
+    port: 5107
     environment:
-      port: 9015
+      port: 9107
 
   crypto_1:
     lang: hybrid-node18
@@ -189,9 +224,9 @@ functions:
     limits:
       memory: 192M
       cpu: 1
-    port: 5016
+    port: 5108
     environment:
-      port: 9016
+      port: 9108
 
   image-flip-rotate_1:
     lang: hybrid-node18
@@ -200,9 +235,9 @@ functions:
     limits:
       memory: 650M
       cpu: 1
-    port: 5017
+    port: 5109
     environment:
-      port: 9017
+      port: 9109
 
   chameleon_2:
     lang: hybrid-py
@@ -211,9 +246,9 @@ functions:
     limits:
       memory: 400M
       cpu: 1
-    port: 5018
+    port: 5202
     environment:
-      port: 9018
+      port: 9202
 
   dynamic-html_2:
     lang: hybrid-py
@@ -222,9 +257,9 @@ functions:
     limits:
       memory: 148M
       cpu: 1
-    port: 5019
+    port: 5203
     environment:
-      port: 9019
+      port: 9203
 
   image-processing_2:
     lang: hybrid-py
@@ -233,9 +268,9 @@ functions:
     limits:
       memory: 300M
       cpu: 1
-    port: 5020
+    port: 5204
     environment:
-      port: 9020
+      port: 9204
 
   pyaes_2:
     lang: hybrid-py
@@ -244,9 +279,9 @@ functions:
     limits:
       memory: 128M
       cpu: 1
-    port: 5021
+    port: 5205
     environment:
-      port: 9021
+      port: 9205
 
   image-recognition_2:
     lang: hybrid-py
@@ -255,9 +290,9 @@ functions:
     limits:
       memory: 800M
       cpu: 2
-    port: 5022
+    port: 5206
     environment:
-      port: 9022
+      port: 9206
       exec_timeout: 50
       write_timeout: 55
 
@@ -268,9 +303,9 @@ functions:
     limits:
       memory: 300M
       cpu: 1
-    port: 5023
+    port: 5207
     environment:
-      port: 9023
+      port: 9207
 
   crypto_2:
     lang: hybrid-node18
@@ -279,9 +314,9 @@ functions:
     limits:
       memory: 170M
       cpu: 1
-    port: 5024
+    port: 5208
     environment:
-      port: 9024
+      port: 9208
 
   image-flip-rotate_2:
     lang: hybrid-node18
@@ -290,6 +325,6 @@ functions:
     limits:
       memory: 624M
       cpu: 1
-    port: 5025
+    port: 5209
     environment:
-      port: 9025
+      port: 9209

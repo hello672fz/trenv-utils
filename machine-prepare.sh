@@ -48,7 +48,8 @@ function prepare_rxe() {
 
 function download_ctr_images() {
   local apps=(h-hello-world h-memory pyaes image-processing video-processing \
-    image-recognition chameleon dynamic-html crypto image-flip-rotate)
+    image-recognition chameleon dynamic-html crypto image-flip-rotate \
+    json-serde js-json-serde pagerank )
   for app in ${apps[@]}; do
     local img_name=docker.io/jialianghuang/${app}:latest
     local output=$(ctr -n openfaas-fn image check "name==${img_name}")
@@ -80,6 +81,18 @@ function generate_cp() {
   faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "h-mem*"
   sleep 1
   curl -X POST http://127.0.0.1:8081/function/h-memory -d '{"size": 134217728}'
+
+  faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "json-serde"
+  sleep 1
+  curl -X POST http://127.0.0.1:8081/function/json-serde -d '{"name": "2"}'
+
+  faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "js-json-serde"
+  sleep 1
+  curl -X POST -H "Content-Type: application/json" http://127.0.0.1:8081/function/js-json-serde -d '{"name": "2"}'
+
+  faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "pagerank"
+  sleep 1
+  curl -X POST http://127.0.0.1:8081/function/pagerank -d '{"size": 70000}'
   
   for id in "" "_1" "_2"; do
     faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "pyaes${id}"
@@ -119,6 +132,7 @@ function generate_cp() {
   # Maybe a solution is copy criu.kdat into /run/ beforehand 
   faasd checkpoint --dax-device $DAX_DEVICE --mem-pool $POOL_TYPE h-hello-world h-memory \
     pyaes image-processing image-recognition video-processing chameleon dynamic-html crypto image-flip-rotate \
+    json-serde js-json-serde pagerank \
     pyaes_1 image-processing_1 image-recognition_1 video-processing_1 chameleon_1 dynamic-html_1 crypto_1 image-flip-rotate_1 \
     pyaes_2 image-processing_2 image-recognition_2 video-processing_2 chameleon_2 dynamic-html_2 crypto_2 image-flip-rotate_2
 
