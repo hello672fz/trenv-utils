@@ -24,16 +24,16 @@ functions:
     environment:
       port: 9001
 
-  chameleon:
-    lang: hybrid-py
-    handler: ./chameleon
-    image: jialianghuang/chameleon:latest
-    limits:
-      memory: 300M
-      cpu: 1
-    port: 5002
-    environment:
-      port: 9002
+  # chameleon:
+  #   lang: hybrid-py
+  #   handler: ./chameleon
+  #   image: jialianghuang/chameleon:latest
+  #   limits:
+  #     memory: 300M
+  #     cpu: 1
+  #   port: 5002
+  #   environment:
+  #     port: 9002
 
   dynamic-html:
     lang: hybrid-py
@@ -120,7 +120,7 @@ functions:
     handler: ./js-json-serde
     image: jialianghuang/js-json-serde:latest
     limits:
-      memory: 160M
+      memory: 100M
       cpu: 1
     port: 5010
     environment:
@@ -131,7 +131,7 @@ functions:
     handler: ./json-serde
     image: jialianghuang/json-serde:latest
     limits:
-      memory: 160M
+      memory: 100M
       cpu: 1
     port: 5011
     environment:
@@ -142,23 +142,23 @@ functions:
     handler: ./pagerank
     image: jialianghuang/pagerank:latest
     limits:
-      memory: 160M
+      memory: 280M
       cpu: 1
     port: 5012
     environment:
       port: 9012
 
 
-  chameleon_1:
-    lang: hybrid-py
-    handler: ./chameleon
-    image: jialianghuang/chameleon:latest
-    limits:
-      memory: 300M
-      cpu: 1
-    port: 5102
-    environment:
-      port: 9102 
+  # chameleon_1:
+  #   lang: hybrid-py
+  #   handler: ./chameleon
+  #   image: jialianghuang/chameleon:latest
+  #   limits:
+  #     memory: 300M
+  #     cpu: 1
+  #   port: 5102
+  #   environment:
+  #     port: 9102 
 
   dynamic-html_1:
     lang: hybrid-py
@@ -239,16 +239,49 @@ functions:
     environment:
       port: 9109
 
-  chameleon_2:
-    lang: hybrid-py
-    handler: ./chameleon
-    image: jialianghuang/chameleon:latest
+  js-json-serde_1:
+    lang: hybrid-node18
+    handler: ./js-json-serde
+    image: jialianghuang/js-json-serde:latest
     limits:
-      memory: 400M
+      memory: 96M
       cpu: 1
-    port: 5202
+    port: 5110
     environment:
-      port: 9202
+      port: 9110
+
+  json-serde_1:
+    lang: hybrid-py
+    handler: ./json-serde
+    image: jialianghuang/json-serde:latest
+    limits:
+      memory: 116M
+      cpu: 1
+    port: 5111
+    environment:
+      port: 9111
+
+  pagerank_1:
+    lang: hybrid-py
+    handler: ./pagerank
+    image: jialianghuang/pagerank:latest
+    limits:
+      memory: 250M
+      cpu: 1
+    port: 5112
+    environment:
+      port: 9112
+
+  # chameleon_2:
+  #   lang: hybrid-py
+  #   handler: ./chameleon
+  #   image: jialianghuang/chameleon:latest
+  #   limits:
+  #     memory: 400M
+  #     cpu: 1
+  #   port: 5202
+  #   environment:
+  #     port: 9202
 
   dynamic-html_2:
     lang: hybrid-py
@@ -328,3 +361,36 @@ functions:
     port: 5209
     environment:
       port: 9209
+
+  js-json-serde_2:
+    lang: hybrid-node18
+    handler: ./js-json-serde
+    image: jialianghuang/js-json-serde:latest
+    limits:
+      memory: 128M
+      cpu: 1
+    port: 5210
+    environment:
+      port: 9210
+
+  json-serde_2:
+    lang: hybrid-py
+    handler: ./json-serde
+    image: jialianghuang/json-serde:latest
+    limits:
+      memory: 132M
+      cpu: 1
+    port: 5211
+    environment:
+      port: 9211
+
+  pagerank_2:
+    lang: hybrid-py
+    handler: ./pagerank
+    image: jialianghuang/pagerank:latest
+    limits:
+      memory: 300M
+      cpu: 1
+    port: 5212
+    environment:
+      port: 9212

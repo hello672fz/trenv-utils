@@ -46,6 +46,13 @@ function prepare_rxe() {
   fi
 }
 
+function prepare_faasnap() {
+  cd $FAASNAP_DIR
+  cp faasnap.json /etc/faasnap.json
+  ./prep.sh
+  cd -
+}
+
 function download_ctr_images() {
   local apps=(h-hello-world h-memory pyaes image-processing video-processing \
     image-recognition chameleon dynamic-html crypto image-flip-rotate \
@@ -204,7 +211,7 @@ if [ "$POOL_TYPE" == "dax" ] && [ ! -e $DAX_DEVICE ]; then
   done
   daxctl disable-device -r 0 all
   daxctl destroy-device -r 0 all || true
-  daxctl create-device -r 0 -a 4096
+  daxctl create-device -r 0 -a 4096 -s 16g  # we only need 16GB of dax memory to store image
 fi
 
 bash insmod.sh
@@ -212,13 +219,23 @@ if [ "$POOL_TYPE" == "rdma" ]; then
   prepare_rxe
 fi
 
+if ! ip netns list | grep -P 'fc9'; then
+  prepare_faasnap
+fi
+
 # task in prepare need only done once
 # when the machine is boot up
 #
 # setup open file descriptor limit
 ulimit -n 102400
+# disable swap
+swapoff -a
 
 # change owner of pkg directory
+if [ ! -e /var/lib/faasd/pkgs ]; then
+  echo "please make sure /var/lib/faasd/pkgs is exists"
+  exit 1
+fi
 chown -R 100 /var/lib/faasd/pkgs/
 
 kill_process faasd
@@ -226,13 +243,14 @@ kill_process containerd
 start_containerd $TEMPDIR
 download_ctr_images
 
-cp resolv.conf $WORKDIR
-cd $WORKDIR
+# faasd install need resolve.conf and network.sh
+cd /root/go/src/github.com/openfaas/faasd
 faasd install
+cd $WORKDIR
 umount /var/lib/faasd/checkpoints || true
 rm -rf /var/lib/faasd/checkpoints
 mkdir -p /var/lib/faasd/checkpoints
-mount -t tmpfs tmpfs /var/lib/faasd/checkpoints -o size=8G
+mount -t tmpfs tmpfs /var/lib/faasd/checkpoints -o size=16G
 
 kill_ctrs
 sleep 1

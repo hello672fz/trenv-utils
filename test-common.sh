@@ -6,6 +6,7 @@ OUTDIR=/root/test/result
 RAW_CRIU_PATH=/root/downloads/raw-criu
 SWITCH_CRIU_PATH=/root/downloads/switch-criu
 LAZY_CRIU_PATH=/root/downloads/lazy-criu
+FAASNAP_DIR=/root/faasnap/faasnap
 
 if [ ! -e $RAW_CRIU_PATH ]; then
   echo "raw criu not exist: $RAW_CRIU_PATH"
@@ -81,6 +82,20 @@ function kill_process() {
   fi
 }
 
+function clean_fc_netns() {
+  local n
+  local id
+  for n in $(ip netns list); do
+    if echo $n | grep -P "fc\d+" &> /dev/null; then 
+      id=${n:2}
+      if [ $id -ge 20 ] ;then
+        ip netns delete $n
+        echo "delete namespace $n"
+      fi
+    fi
+  done
+}
+
 function is_process_exist() {
   local name=$1
   if pgrep -x $name > /dev/null; then
@@ -106,7 +121,7 @@ function start_containerd() {
     exit 1
   fi
   echo "start containerd..."
-  containerd -l debug &> $tmp_dir/containerd.log &
+  setsid containerd -l debug &> $tmp_dir/containerd.log &
   sleep 5
 }
 
