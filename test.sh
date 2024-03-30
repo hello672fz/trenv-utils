@@ -123,7 +123,10 @@ function start_faasnap_daemon() {
   cd $FAASNAP_DIR
   setsid ./main --host=0.0.0.0 --port=8080 &> $TEMPDIR/faasnap.log &
   local faasnap_daemon_pid=$!
-  rmdir /sys/fs/cgroup/faasnap && mkdir /sys/fs/cgroup/faasnap
+  if [ -e /sys/fs/cgroup/faasnap ]; then
+    rmdir /sys/fs/cgroup/faasnap
+  fi
+  mkdir /sys/fs/cgroup/faasnap
   echo $faasnap_daemon_pid > /sys/fs/cgroup/faasnap/cgroup.procs
   sleep 3
   activate_test_driver_env
