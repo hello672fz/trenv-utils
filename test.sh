@@ -34,6 +34,10 @@ function cleanup() {
   done
 
   echo "clean containers"
+  if [ $(is_process_exist faasd) == "false" ] &&  [ ! -e /run/containerd/containerd.sock ]; then
+    containerd &> /dev/null &
+    sleep 2
+  fi
   kill_ctrs
 
   local number_of_cts=$(ctr -n openfaas-fn c ls -q | wc -l)
@@ -57,9 +61,18 @@ function cleanup() {
     fi
   done
 
+  rm -rf /run/containerd/*
+
   # do not kill faasnap daemon, it was very slow on startup
   # let user itself to decide kill or restart faasnap daemon
   clean_fc_netns 
+  rm -rf /root/faasnap/vm/*
+
+  # clean cni network state
+  iptables -F
+  systemctl restart firewalld
+  rm -rf /var/lib/cni/results
+  rm -rf /run/cni/openfaas-cni-bridge
 
   echo "umount overlay under /var/lib/faasd/app/merged/"
   umount /var/lib/faasd/app/merged/* || true
@@ -67,9 +80,10 @@ function cleanup() {
 }
 
 function show_memory_usage() {
-  local cgroup_path=/sys/fs/cgroup/openfaas-fn
-  if [ $START_METHOD == "faasnap" ]; then
-    cgroup_path=/sys/fs/cgroup/faasnap
+  local cgroup_path=$(get_cgroup_path $START_METHOD)
+  if [ ! -e $cgroup_path ]; then
+    echo "$cgroup_path not exist, create it now..."
+    mkdir $cgroup_path
   fi
   while true; do
     date
@@ -86,6 +100,15 @@ function start_test {
   faas-cli register -f $WORKDIR/stack.yml -g http://127.0.0.1:8081
   sleep 2
 
+  # while true; do
+  #   read -p "start test? " yn
+  #   case $yn in
+  #       [Yy]* ) break;;
+  #       [Nn]* ) exit 1;;
+  #       * ) echo "Please answer yes or no.";;
+  #   esac
+  # done
+
   show_memory_usage &> $TEMPDIR/memory_stat.output &
   local mem_stat_pid=$!
   mpstat 1 > $TEMPDIR/mpstat.output &
@@ -101,7 +124,7 @@ function start_test {
 }
 
 function start_faasnap_daemon() {
-  if [ $START_METHOD != "faasnap" ]; then
+  if [ $START_METHOD != "faasnap" ] && [ $START_METHOD != "reap" ]; then
     return
   fi
   if pgrep -f './main' &> /dev/null; then
@@ -114,24 +137,24 @@ function start_faasnap_daemon() {
       esac
     done
   fi
-  for ((i=1;i<=12;i++)); do
-    if ! ip netns list | grep -P "fc${i}" &> /dev/null; then
-      echo "cannot found net ns fc${i}, please create it first"
-      exit 1
-    fi
-  done
   cd $FAASNAP_DIR
+  ./prep.sh
   setsid ./main --host=0.0.0.0 --port=8080 &> $TEMPDIR/faasnap.log &
   local faasnap_daemon_pid=$!
-  if [ -e /sys/fs/cgroup/faasnap ]; then
-    rmdir /sys/fs/cgroup/faasnap
-  fi
-  mkdir /sys/fs/cgroup/faasnap
-  echo $faasnap_daemon_pid > /sys/fs/cgroup/faasnap/cgroup.procs
   sleep 3
   activate_test_driver_env
-  python3 prepare-faasnap.py test-2inputs.json
+  python3 prepare-faasnap.py $START_METHOD test-2inputs.json
   sleep 1
+  # move to cgroup after create snapshot
+  # to prevent the cgroup account for the
+  # memory of snapshot on cxl tmpfs
+
+  local cgroup_path=$(get_cgroup_path $START_METHOD)
+  if [ -e $cgroup_path ]; then
+    rmdir $cgroup_path
+  fi
+  mkdir $cgroup_path
+  echo $faasnap_daemon_pid > ${cgroup_path}/cgroup.procs
   cd -
 }
 
@@ -186,7 +209,7 @@ function collect_result() {
   if [ -e $TEMPDIR/mpstat.output ]; then
     mv $TEMPDIR/mpstat.output $output_dir
   fi
-  mv $TEMPDIR/faasd.log $output_dir
+  cp $TEMPDIR/faasd.log $output_dir
   if [ -e $TEMPDIR/test.log ]; then
     mv $TEMPDIR/test.log $output_dir
   fi
@@ -315,10 +338,14 @@ if [ $(is_process_exist faasd) == "true" ]; then
   exit 1
 fi
 
-if [ $START_METHOD == "faasnap" ]; then
+if [ $START_METHOD == "faasnap" ] || [ $START_METHOD == "reap" ]; then
   start_faasnap_daemon
 fi
 
+# clear openfaas-fn cgroup
+if [ -e /sys/fs/cgroup/openfaas-fn ]; then
+  rmdir /sys/fs/cgroup/openfaas-fn
+fi
 start_containerd $TEMPDIR
 sleep 5
 

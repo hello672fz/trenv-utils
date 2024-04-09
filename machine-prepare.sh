@@ -42,14 +42,21 @@ function prepare_rxe() {
     local ip_address=$(ip -f inet addr show ${ETH_INTERFACE} | sed -En -e 's/.*inet ([0-9.]+).*/\1/p')
     echo "prepare rxe for interface $ETH_INTERFACE: ip address is ${ip_address}"
     sleep 5
-    modprobe pseudo_mm_rdma sport=50000 sip="${ip_address}" cip="${ip_address}"
+    modprobe pseudo_mm_rdma sport=50000 sip="${ip_address}" cip="${ip_address}" node=2
   fi
 }
 
 function prepare_faasnap() {
+  echo "please remember mount cxl tmpfs to /mnt/cxl-tmp!"
+  echo "please remember create directory /mnt/cxl-tmp/faasnap/snapshot!"
+  # if ! mount | grep -P '/mnt/cxl-tmp.*bind:2' &> /dev/null; then
+  #   echo "please mount cxl tmpfs to /mnt/cxl-tmp first"
+  #   exit 1
+  # fi
   cd $FAASNAP_DIR
   cp faasnap.json /etc/faasnap.json
-  ./prep.sh
+  # ./prep.sh
+  # mkdir -p /mnt/cxl-tmp/faasnap/snapshot
   cd -
 }
 
@@ -89,18 +96,6 @@ function generate_cp() {
   sleep 1
   curl -X POST http://127.0.0.1:8081/function/h-memory -d '{"size": 134217728}'
 
-  faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "json-serde"
-  sleep 1
-  curl -X POST http://127.0.0.1:8081/function/json-serde -d '{"name": "2"}'
-
-  faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "js-json-serde"
-  sleep 1
-  curl -X POST -H "Content-Type: application/json" http://127.0.0.1:8081/function/js-json-serde -d '{"name": "2"}'
-
-  faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "pagerank"
-  sleep 1
-  curl -X POST http://127.0.0.1:8081/function/pagerank -d '{"size": 70000}'
-  
   for id in "" "_1" "_2"; do
     faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "pyaes${id}"
     sleep 1
@@ -133,6 +128,19 @@ function generate_cp() {
     faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "image-flip-rotate${id}"
     sleep 1
     curl http://127.0.0.1:8081/function/image-flip-rotate${id}
+
+    faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "json-serde${id}"
+    sleep 1
+    curl -X POST http://127.0.0.1:8081/function/json-serde -d '{"name": "2"}'
+
+    faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "js-json-serde${id}"
+    sleep 1
+    curl -X POST -H "Content-Type: application/json" http://127.0.0.1:8081/function/js-json-serde -d '{"name": "2"}'
+
+    faas-cli deploy --update=false -f $WORKDIR/stack.yml -g http://127.0.0.1:8081 --filter "pagerank${id}"
+    sleep 1
+    curl -X POST http://127.0.0.1:8081/function/pagerank -d '{"size": 70000}'
+  
   done
   
   # generate and convert checkpoint
@@ -141,13 +149,9 @@ function generate_cp() {
     pyaes image-processing image-recognition video-processing chameleon dynamic-html crypto image-flip-rotate \
     json-serde js-json-serde pagerank \
     pyaes_1 image-processing_1 image-recognition_1 video-processing_1 chameleon_1 dynamic-html_1 crypto_1 image-flip-rotate_1 \
-    pyaes_2 image-processing_2 image-recognition_2 video-processing_2 chameleon_2 dynamic-html_2 crypto_2 image-flip-rotate_2
-
-  # clear container and restart faasd
-  kill $faasd_pid
-  for app in ${apps[@]}; do
-    ctr -n openfaas-fn c rm $app
-  done
+    json-serde_1 js-json-serde_1 pagerank_1 \
+    pyaes_2 image-processing_2 image-recognition_2 video-processing_2 chameleon_2 dynamic-html_2 crypto_2 image-flip-rotate_2 \
+    json-serde_2 js-json-serde_2 pagerank_2
 }
 
 function print_help_message() {
@@ -219,9 +223,9 @@ if [ "$POOL_TYPE" == "rdma" ]; then
   prepare_rxe
 fi
 
-if ! ip netns list | grep -P 'fc9'; then
-  prepare_faasnap
-fi
+# if ! ip netns list | grep -P 'fc9'; then
+prepare_faasnap
+# fi
 
 # task in prepare need only done once
 # when the machine is boot up
@@ -250,7 +254,7 @@ cd $WORKDIR
 umount /var/lib/faasd/checkpoints || true
 rm -rf /var/lib/faasd/checkpoints
 mkdir -p /var/lib/faasd/checkpoints
-mount -t tmpfs tmpfs /var/lib/faasd/checkpoints -o size=16G
+mount -t tmpfs tmpfs /var/lib/faasd/checkpoints -o size=16g,mpol=bind:2
 
 kill_ctrs
 sleep 1

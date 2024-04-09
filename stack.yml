@@ -24,16 +24,16 @@ functions:
     environment:
       port: 9001
 
-  # chameleon:
-  #   lang: hybrid-py
-  #   handler: ./chameleon
-  #   image: jialianghuang/chameleon:latest
-  #   limits:
-  #     memory: 300M
-  #     cpu: 1
-  #   port: 5002
-  #   environment:
-  #     port: 9002
+  chameleon:
+    lang: hybrid-py
+    handler: ./chameleon
+    image: jialianghuang/chameleon:latest
+    limits:
+      memory: 300M
+      cpu: 1
+    port: 5002
+    environment:
+      port: 9002
 
   dynamic-html:
     lang: hybrid-py
@@ -149,16 +149,16 @@ functions:
       port: 9012
 
 
-  # chameleon_1:
-  #   lang: hybrid-py
-  #   handler: ./chameleon
-  #   image: jialianghuang/chameleon:latest
-  #   limits:
-  #     memory: 300M
-  #     cpu: 1
-  #   port: 5102
-  #   environment:
-  #     port: 9102 
+  chameleon_1:
+    lang: hybrid-py
+    handler: ./chameleon
+    image: jialianghuang/chameleon:latest
+    limits:
+      memory: 300M
+      cpu: 1
+    port: 5102
+    environment:
+      port: 9102 
 
   dynamic-html_1:
     lang: hybrid-py
@@ -272,16 +272,16 @@ functions:
     environment:
       port: 9112
 
-  # chameleon_2:
-  #   lang: hybrid-py
-  #   handler: ./chameleon
-  #   image: jialianghuang/chameleon:latest
-  #   limits:
-  #     memory: 400M
-  #     cpu: 1
-  #   port: 5202
-  #   environment:
-  #     port: 9202
+  chameleon_2:
+    lang: hybrid-py
+    handler: ./chameleon
+    image: jialianghuang/chameleon:latest
+    limits:
+      memory: 400M
+      cpu: 1
+    port: 5202
+    environment:
+      port: 9202
 
   dynamic-html_2:
     lang: hybrid-py

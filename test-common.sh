@@ -21,23 +21,57 @@ fi
 # (more than 2 mins) , so here we run criu check and let it generates criu.kdat
 function enable_raw_criu() {
   cp $RAW_CRIU_PATH /usr/local/sbin/criu
+  if [ -e /root/downloads/raw-criu.kdat ]; then
+    cp /root/downloads/raw-criu.kdat /run/criu.kdat
+  fi
   echo "start criu check..."
   criu check
   echo "criu check finish"
+  cp /run/criu.kdat /root/downloads/raw-criu.kdat
 }
 
 function enable_lazy_criu() {
   cp $LAZY_CRIU_PATH /usr/local/sbin/criu
+  if [ -e /root/downloads/lazy-criu.kdat ]; then
+    cp /root/downloads/lazy-criu.kdat /run/criu.kdat
+  fi
   echo "start criu check..."
   criu check
   echo "criu check finish"
+  cp /run/criu.kdat /root/downloads/lazy-criu.kdat
 }
 
 function enable_switch_criu() {
   cp $SWITCH_CRIU_PATH /usr/local/sbin/criu
+  if [ -e /root/downloads/switch-criu.kdat ]; then
+    cp /root/downloads/switch-criu.kdat /run/criu.kdat
+  fi
   echo "start criu check..."
   criu check
   echo "criu check finish"
+  cp /run/criu.kdat /root/downloads/switch-criu.kdat
+}
+
+function enable_reuse_criu() {
+  cp /root/downloads/reuse-criu /usr/local/sbin/criu
+  if [ -e /root/downloads/reuse-criu.kdat ]; then
+    cp /root/downloads/reuse-criu.kdat /run/criu.kdat
+  fi
+  echo "start criu check..."
+  criu check
+  echo "criu check finish"
+  cp /run/criu.kdat /root/downloads/reuse-criu.kdat
+}
+
+function enable_cgroup_criu() {
+  cp /root/downloads/cgroup-criu /usr/local/sbin/criu
+  if [ -e /root/downloads/cgroup-criu.kdat ]; then
+    cp /root/downloads/cgroup-criu.kdat /run/criu.kdat
+  fi
+  echo "start criu check..."
+  criu check
+  echo "criu check finish"
+  cp /run/criu.kdat /root/downloads/cgroup-criu.kdat
 }
 
 function kill_ctrs() {
@@ -88,10 +122,8 @@ function clean_fc_netns() {
   for n in $(ip netns list); do
     if echo $n | grep -P "fc\d+" &> /dev/null; then 
       id=${n:2}
-      if [ $id -ge 20 ] ;then
-        ip netns delete $n
-        echo "delete namespace $n"
-      fi
+      ip netns delete $n
+      echo "delete namespace $n"
     fi
   done
 }
@@ -160,6 +192,8 @@ function start_faasd() {
       enable_lazy_criu
     else
       enable_switch_criu
+      # enable_reuse_criu
+      # enable_cgroup_criu
     fi
   fi
   if [ $no_bg_task -eq 1 ]; then
@@ -179,6 +213,17 @@ function start_faasd() {
     --pull-policy no ${args} &> $TEMPDIR/faasd.log &
   local faasd_pid=$!
   echo $faasd_pid
+}
+
+function get_cgroup_path() {
+  local method=$1
+  local cgroup_path=/sys/fs/cgroup/openfaas-fn
+  if [ $method == "faasnap" ]; then
+    cgroup_path=/sys/fs/cgroup/faasnap
+  elif [ $method == "reap" ]; then
+    cgroup_path=/sys/fs/cgroup/reap
+  fi
+  echo $cgroup_path
 }
 
 # Different machine might use different python
