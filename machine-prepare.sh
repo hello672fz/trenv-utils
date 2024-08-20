@@ -70,7 +70,7 @@ function download_ctr_images() {
     if [ -z "${output}" ]; then
       # do not found image in containerd
       echo "start pull docker image for $app ..."
-      ctr image pull $img_name
+      https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 ctr image pull $img_name
     fi
   done
 }

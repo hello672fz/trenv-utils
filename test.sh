@@ -70,7 +70,8 @@ function cleanup() {
 
   # clean cni network state
   iptables -F
-  systemctl restart firewalld
+  # systemctl restart firewalld
+  systemctl restart ufw
   rm -rf /var/lib/cni/results
   rm -rf /run/cni/openfaas-cni-bridge
 
@@ -356,6 +357,8 @@ fi
 
 if [ $NO_BG_TASK -eq 1 ]; then
   sleep 2
+elif [ $START_METHOD == "reap" ] || [ $START_METHOD == "faasnap" ]; then
+  sleep 60
 else
   # some faasd background task need take some time to finish
   sleep 20
