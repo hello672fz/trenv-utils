@@ -1,7 +1,7 @@
 version: 1.0
 provider:
   name: openfaas
-  gateway: http://10.230.166.1:8080
+  gateway: http://127.0.0.1:8081
 functions:
   h-memory:
     lang: hybrid-py
