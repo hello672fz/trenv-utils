@@ -1,0 +1,11 @@
+provider:
+  gateway: http://127.0.0.1:8081
+  username: admin
+  password: yhVekl0sluID2KzzCRgzRERzJnIoiwj2nne20R5RoVYuJo5JllNbU9c96Amttnr
+timeout: 60
+max_retry: 3
+average: 3
+warm_up_count: 3
+functions:
+  h-hello-world:
+    request_body:
