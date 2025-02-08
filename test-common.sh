@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WORKDIR=/root/test
+WORKDIR=$(pwd)
 TEMPDIR=/run
 OUTDIR=/root/test/result
 RAW_CRIU_PATH=/root/downloads/raw-criu
