@@ -1,0 +1,7 @@
+language: node18-debian
+fprocess: node index.js
+build_options:
+  - name: net
+    packages:
+      - iproute2
+enable_port: True
